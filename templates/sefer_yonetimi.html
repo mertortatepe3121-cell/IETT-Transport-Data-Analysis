@@ -1,0 +1,1186 @@
+{% extends "base.html" %}
+
+{% block title %}Sefer Yönetimi | İETT{% endblock %}
+
+{% block page_heading %}Sefer Yönetimi{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-panel">
+
+    <!-- =====================================================
+         ÖZET KARTLARI
+    ====================================================== -->
+
+    <div class="dashboard-cards">
+
+        <!-- TOPLAM -->
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-route"></i>
+            </div>
+
+            <div>
+                <span>Toplam Sefer</span>
+
+                <strong>
+                    {{ total_trips }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- AKTİF -->
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div>
+                <span>Aktif</span>
+
+                <strong>
+                    {{ active_trips }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- TAMAMLANAN -->
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-flag-checkered"></i>
+            </div>
+
+            <div>
+                <span>Tamamlanan</span>
+
+                <strong>
+                    {{ completed_trips }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- İPTAL -->
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </div>
+
+            <div>
+                <span>İptal</span>
+
+                <strong>
+                    {{ cancelled_trips }}
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         BAŞLIK
+    ====================================================== -->
+
+    <div class="panel-header">
+
+        <div>
+
+            <span class="panel-subtitle">
+                SEFER YÖNETİMİ
+            </span>
+
+            <h2>
+                Sefer Yönetimi
+            </h2>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="primary-btn"
+            onclick="openTripModal()">
+
+            <i class="fa-solid fa-plus"></i>
+
+            Yeni Sefer
+
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         ARAMA
+    ====================================================== -->
+<form method="GET"
+      action="{{ url_for('sefer_yonetimi') }}"
+      class="user-toolbar">
+
+    <div class="user-search">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+            type="text"
+            id="tripSearch"
+            name="search"
+            value="{{ search }}"
+            placeholder="Sefer no, hat, güzergâh veya araç ara..."
+            autocomplete="off"
+        >
+
+    </div>
+
+    <button
+    type="button"
+    class="clear-trip-search"
+    onclick="filterTrips()">
+
+    Filtrele
+
+</button>
+
+    <button
+        type="button"
+        class="clear-trip-search"
+        onclick="clearTripSearch()">
+        <i class="fa-solid fa-rotate-left"></i>
+        Temizle
+    </button>
+
+</form>
+
+
+    <!-- =====================================================
+         TABLO
+    ====================================================== -->
+
+    <div class="table-wrapper">
+
+        <table class="user-table trip-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>SEFER NO</th>
+
+                    <th>HAT</th>
+
+                    <th>GÜZERGÂH</th>
+
+                    <th>ARAÇ</th>
+
+                    <th>BAŞLANGIÇ</th>
+
+                    <th>BİTİŞ</th>
+
+                    <th>SAAT</th>
+
+                    <th>DURUM</th>
+
+                    <th>İŞLEMLER</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for trip in trips %}
+
+                <tr>
+
+                    <!-- SEFER NO -->
+
+                    <td>
+
+                        <strong>
+                            {{ trip[1] }}
+                        </strong>
+
+                    </td>
+
+
+                    <!-- HAT -->
+
+                    <td>
+                        {{ trip[2] }}
+                    </td>
+
+
+                    <!-- GÜZERGÂH -->
+
+                    <td>
+                        {{ trip[3] }}
+                    </td>
+
+
+                   <!-- ARAÇ -->
+
+<td class="trip-vehicle-cell">
+
+    <span>
+        {{ trip[10] or "-" }}
+    </span>
+
+</td>
+
+
+                    <!-- BAŞLANGIÇ -->
+
+                    <td>
+
+                        {{ trip[11] or "-" }}
+
+                    </td>
+
+
+                    <!-- BİTİŞ -->
+
+                    <td>
+
+                        {{ trip[12] or "-" }}
+
+                    </td>
+
+
+                    <!-- SAAT -->
+
+                    <td>
+
+                        {% if trip[7] %}
+
+                            {{ trip[7] }}
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- DURUM -->
+
+                    <td>
+
+                        {% if trip[9] == "aktif" %}
+
+                            <span class="status-badge active">
+                                Aktif
+                            </span>
+
+                        {% elif trip[9] == "tamamlandi" %}
+
+                            <span class="status-badge completed">
+                                Tamamlandı
+                            </span>
+
+                        {% elif trip[9] == "iptal" %}
+
+                            <span class="status-badge passive">
+                                İptal
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-badge">
+                                {{ trip[9] }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- İŞLEMLER -->
+
+                    <td>
+
+                        <div class="action-buttons">
+
+                        <button
+    type="button"
+    class="edit-trip-btn"
+    onclick="editTrip({{ trip[0] }})"
+    title="Düzenle">
+
+    <i class="fa-solid fa-pen"></i>
+
+</button>
+
+
+                            <form
+    method="POST"
+    action="{{ url_for('sefer_sil', trip_id=trip[0]) }}"
+    style="display:inline;">
+
+    <button
+        type="submit"
+        class="delete-trip-btn"
+        title="Sil"
+        onclick="return confirm('Bu seferi silmek istediğinize emin misiniz?');">
+
+        <i class="fa-solid fa-trash"></i>
+
+    </button>
+
+</form>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="9"
+                        style="text-align:center; padding:40px;">
+
+                        Henüz kayıtlı sefer bulunmuyor.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+        <!-- ================= SEFER SAYFALAMA ================= -->
+
+{% if total_pages > 1 %}
+
+<div class="pagination">
+
+    {% if page > 1 %}
+
+        <a href="?page={{ page - 1 }}">
+            ← Önceki
+        </a>
+
+    {% endif %}
+
+
+    {% if page > 3 %}
+
+        <a href="?page=1">
+            1
+        </a>
+
+        <span class="pagination-dots">
+            ...
+        </span>
+
+    {% endif %}
+
+
+    {% set start_page = [1, page - 2]|max %}
+    {% set end_page = [total_pages, page + 2]|min %}
+
+
+    {% for p in range(start_page, end_page + 1) %}
+
+        <a
+            href="?page={{ p }}"
+            class="{% if p == page %}active{% endif %}"
+        >
+            {{ p }}
+        </a>
+
+    {% endfor %}
+
+
+    {% if page < total_pages - 2 %}
+
+        <span class="pagination-dots">
+            ...
+        </span>
+
+        <a href="?page={{ total_pages }}">
+            {{ total_pages }}
+        </a>
+
+    {% endif %}
+
+
+    {% if page < total_pages %}
+
+        <a href="?page={{ page + 1 }}">
+            Sonraki →
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     YENİ SEFER MODALI
+========================================================= -->
+
+<div
+    id="tripModal"
+    class="user-modal">
+
+    <div class="user-modal-content">
+
+
+        <!-- MODAL BAŞLIK -->
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="panel-subtitle">
+                    SEFER YÖNETİMİ
+                </span>
+
+                <h2>
+                    Yeni Sefer Ekle
+                </h2>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeTripModal()">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <!-- FORM -->
+
+        <form
+            id="tripForm"
+            method="POST"
+            action="{{ url_for('sefer_ekle') }}">
+
+
+            <!-- SEFER NO -->
+
+            <div class="form-group">
+
+                <label for="tripNumber">
+                    Sefer No
+                </label>
+
+                <input
+                    type="text"
+                    id="tripNumber"
+                    name="trip_number"
+                    placeholder="Örn. SFR-001"
+                    required>
+
+            </div>
+
+
+            <!-- HAT NO -->
+
+            <div class="form-group">
+
+                <label for="lineNumber">
+                    Hat No
+                </label>
+
+                <input
+                    type="text"
+                    id="lineNumber"
+                    name="line_number"
+                    placeholder="Örn. 34AS"
+                    required>
+
+            </div>
+
+
+            <!-- GÜZERGÂH -->
+
+            <div class="form-group">
+
+                <label for="tripRoute">
+                    Güzergâh
+                </label>
+
+                <input
+                    type="text"
+                    id="tripRoute"
+                    name="route"
+                    placeholder="Örn. Avcılar - Zincirlikuyu"
+                    required>
+
+            </div>
+
+
+            <!-- ARAÇ -->
+
+            <div class="form-group">
+
+                <label for="vehicleId">
+                    Araç
+                </label>
+
+                <select
+                    id="vehicleId"
+                    name="vehicle_id"
+                    required>
+
+                    <option value="">
+                        Araç seçiniz
+                    </option>
+
+                    {% for vehicle in vehicles %}
+
+                    <option value="{{ vehicle[0] }}">
+
+                        {{ vehicle[1] }} - {{ vehicle[2] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- BAŞLANGIÇ DURAĞI -->
+
+            <div class="form-group">
+
+                <label for="startStopId">
+                    Başlangıç Durağı
+                </label>
+
+                <select
+                    id="startStopId"
+                    name="start_stop_id"
+                    required>
+
+                    <option value="">
+                        Başlangıç durağı seçiniz
+                    </option>
+
+                    {% for stop in stops %}
+
+                    <option value="{{ stop[0] }}">
+
+                        {{ stop[1] }} - {{ stop[2] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- BİTİŞ DURAĞI -->
+
+            <div class="form-group">
+
+                <label for="endStopId">
+                    Bitiş Durağı
+                </label>
+
+                <select
+                    id="endStopId"
+                    name="end_stop_id"
+                    required>
+
+                    <option value="">
+                        Bitiş durağı seçiniz
+                    </option>
+
+                    {% for stop in stops %}
+
+                    <option value="{{ stop[0] }}">
+
+                        {{ stop[1] }} - {{ stop[2] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- SAATLER -->
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+                    <label for="startTime">
+                        Başlangıç Saati
+                    </label>
+
+                    <input
+                        type="time"
+                        id="startTime"
+                        name="start_time">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="endTime">
+                        Bitiş Saati
+                    </label>
+
+                    <input
+                        type="time"
+                        id="endTime"
+                        name="end_time">
+
+                </div>
+
+
+            </div>
+
+
+            <!-- DURUM -->
+
+            <div class="form-group">
+
+                <label for="tripStatus">
+                    Durum
+                </label>
+
+                <select
+                    id="tripStatus"
+                    name="status"
+                    required>
+
+                    <option value="aktif">
+                        Aktif
+                    </option>
+
+                    <option value="tamamlandi">
+                        Tamamlandı
+                    </option>
+
+                    <option value="iptal">
+                        İptal
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- BUTONLAR -->
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="closeTripModal()">
+
+                    İptal
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-btn">
+
+                    <i class="fa-solid fa-check"></i>
+
+                    Kaydet
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- =========================================================
+     SEFER DÜZENLEME MODALI
+========================================================= -->
+
+<div id="editTripModal" class="user-modal">
+
+    <div class="user-modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <span class="panel-subtitle">
+                    SEFER YÖNETİMİ
+                </span>
+
+                <h2>Sefer Düzenle</h2>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeEditTripModal()">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <form id="editTripForm" method="POST">
+
+
+            <div class="form-group">
+
+                <label>Sefer No</label>
+
+                <input
+                    type="text"
+                    id="editTripNumber"
+                    name="trip_number"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Hat No</label>
+
+                <input
+                    type="text"
+                    id="editLineNumber"
+                    name="line_number"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Güzergâh</label>
+
+                <input
+                    type="text"
+                    id="editRoute"
+                    name="route"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Araç</label>
+
+                <select
+                    id="editVehicleId"
+                    name="vehicle_id"
+                    required>
+
+                    {% for vehicle in vehicles %}
+
+                    <option value="{{ vehicle[0] }}">
+                        {{ vehicle[1] }} - {{ vehicle[2] }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Başlangıç Durağı</label>
+
+                <select
+                    id="editStartStopId"
+                    name="start_stop_id"
+                    required>
+
+                    {% for stop in stops %}
+
+                    <option value="{{ stop[0] }}">
+                        {{ stop[1] }} - {{ stop[2] }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Bitiş Durağı</label>
+
+                <select
+                    id="editEndStopId"
+                    name="end_stop_id"
+                    required>
+
+                    {% for stop in stops %}
+
+                    <option value="{{ stop[0] }}">
+                        {{ stop[1] }} - {{ stop[2] }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Başlangıç Saati</label>
+
+                    <input
+                        type="time"
+                        id="editStartTime"
+                        name="start_time">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Bitiş Saati</label>
+
+                    <input
+                        type="time"
+                        id="editEndTime"
+                        name="end_time">
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Durum</label>
+
+                <select
+                    id="editStatus"
+                    name="status">
+
+                    <option value="aktif">Aktif</option>
+
+                    <option value="tamamlandi">
+                        Tamamlandı
+                    </option>
+
+                    <option value="iptal">
+                        İptal
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="closeEditTripModal()">
+
+                    İptal
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-btn">
+
+                    <i class="fa-solid fa-check"></i>
+
+                    Değişiklikleri Kaydet
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+    function editTrip(tripId) {
+
+    const row = document.querySelector(
+        `.edit-trip-btn[onclick="editTrip(${tripId})"]`
+    ).closest("tr");
+
+    const cells = row.querySelectorAll("td");
+
+    const tripNumber = cells[0].innerText.trim();
+    const lineNumber = cells[1].innerText.trim();
+    const route = cells[2].innerText.trim();
+    const vehiclePlate = cells[3].innerText.trim();
+    const startStop = cells[4].innerText.trim();
+    const endStop = cells[5].innerText.trim();
+    const startTime = cells[6].innerText.trim();
+
+    let endTime = "";
+
+if (startTime !== "-") {
+    const parts = startTime.split(":");
+
+    let hour = parseInt(parts[0]);
+    let minute = parseInt(parts[1]);
+
+    minute += 45;
+
+    if (minute >= 60) {
+        hour += Math.floor(minute / 60);
+        minute = minute % 60;
+    }
+
+    if (hour >= 24) {
+        hour = hour % 24;
+    }
+
+    endTime =
+        String(hour).padStart(2, "0") +
+        ":" +
+        String(minute).padStart(2, "0") +
+        ":" +
+        parts[2];
+}
+    const statusText = cells[7].innerText.trim();
+
+    document.getElementById("editTripNumber").value = tripNumber;
+    document.getElementById("editLineNumber").value = lineNumber;
+    document.getElementById("editRoute").value = route;
+    document.getElementById("editStartTime").value =
+        startTime !== "-" ? startTime : "";
+
+        document.getElementById("editEndTime").value =
+        endTime;
+
+        
+
+    document.getElementById("editTripForm").action =
+        `/sefer_duzenle/${tripId}`;
+
+    document.getElementById("editTripModal").classList.add("show");
+
+    // Araç seçimi
+    const vehicleSelect =
+        document.getElementById("editVehicleId");
+
+    for (let option of vehicleSelect.options) {
+
+        if (option.textContent.includes(vehiclePlate)) {
+            option.selected = true;
+            break;
+        }
+
+    }
+
+    // Başlangıç durağı
+    const startSelect =
+        document.getElementById("editStartStopId");
+
+    for (let option of startSelect.options) {
+
+        if (option.textContent.includes(startStop)) {
+            option.selected = true;
+            break;
+        }
+
+    }
+
+    // Bitiş durağı
+    const endSelect =
+        document.getElementById("editEndStopId");
+
+    for (let option of endSelect.options) {
+
+        if (option.textContent.includes(endStop)) {
+            option.selected = true;
+            break;
+        }
+
+    }
+
+    // Durum
+    const statusSelect =
+        document.getElementById("editStatus");
+
+    if (statusText === "Aktif") {
+        statusSelect.value = "aktif";
+    }
+    else if (statusText === "Tamamlandı") {
+        statusSelect.value = "tamamlandi";
+    }
+    else if (statusText === "İptal") {
+        statusSelect.value = "iptal";
+    }
+}
+
+
+function closeEditTripModal() {
+
+    document
+        .getElementById("editTripModal")
+        .classList.remove("show");
+
+}
+
+
+/* =========================================================
+   SEFER MODALI
+========================================================= */
+
+function openTripModal() {
+
+    document
+        .getElementById("tripModal")
+        .classList.add("show");
+
+}
+
+
+function closeTripModal() {
+
+    document
+        .getElementById("tripModal")
+        .classList.remove("show");
+
+}
+
+
+/* =========================================================
+   SEFER ARAMA
+========================================================= */
+
+document
+    .getElementById("tripSearch")
+    .addEventListener("input", function () {
+
+        const searchValue =
+            this.value.toLowerCase().trim();
+
+
+        const rows =
+            document.querySelectorAll(
+                ".trip-table tbody tr"
+            );
+
+
+        rows.forEach(function (row) {
+
+            const rowText =
+                row.textContent.toLowerCase();
+
+
+            if (rowText.includes(searchValue)) {
+
+                row.style.display = "";
+
+            } else {
+
+                row.style.display = "none";
+
+            }
+
+        });
+
+    });
+
+    /* =========================================
+   SEFER FİLTRELEME
+========================================= */
+
+function filterTrips() {
+
+    const searchValue =
+        document.getElementById("tripSearch").value.trim();
+
+    if (searchValue === "") {
+        return;
+    }
+
+    window.location.href =
+        "/sefer_yonetimi?search=" +
+        encodeURIComponent(searchValue);
+}
+
+    /* =========================================
+   SEFER TEMİZLE
+========================================= */
+
+function clearTripSearch() {
+
+    window.location.href =
+        "/sefer_yonetimi";
+}
+
+
+</script>
+
+{% endblock %}

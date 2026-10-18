@@ -1,0 +1,730 @@
+{% extends "base.html" %}
+
+{% block title %}
+Admin Dashboard | İETT
+{% endblock %}
+
+{% block page_heading %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+<!-- =========================================
+     HOŞ GELDİNİZ
+========================================= -->
+
+<div class="dashboard-welcome">
+
+    <div>
+
+        <span class="dashboard-label">
+            İETT VERİ ANALİZ SİSTEMİ
+        </span>
+
+        <h2>
+            Hoş Geldiniz, {{ session.get("username", "Admin") }}
+        </h2>
+
+        <p>
+            İETT operasyonlarını ve veri analizlerini
+            tek merkezden takip edebilirsiniz.
+        </p>
+
+    </div>
+
+    <div class="dashboard-welcome-icon">
+
+        <i class="fa-solid fa-chart-line"></i>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     BİLGİ KARTLARI
+========================================= -->
+
+<div class="dashboard-stats">
+
+    <!-- Toplam Araç -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            <i class="fa-solid fa-bus"></i>
+        </div>
+
+        <div class="stat-content">
+
+            <span>
+                TOPLAM ARAÇ
+            </span>
+<strong>
+    {{ total_vehicles }}
+</strong>
+
+            <small>
+                Sistemde kayıtlı
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <!-- Aktif Araç -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            <i class="fa-solid fa-bus-simple"></i>
+        </div>
+
+        <div class="stat-content">
+
+            <span>
+    HAREKET HALİNDEKİ ARAÇ
+</span>
+
+<strong>
+    {{ moving_vehicles }}
+</strong>
+
+<small>
+     Anlık hareket verisine göre
+</small>
+
+        </div>
+
+    </div>
+
+
+    <!-- Toplam Sefer -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            <i class="fa-solid fa-route"></i>
+        </div>
+
+        <div class="stat-content">
+
+            <span>
+                TOPLAM HAREKET KAYDI
+            </span>
+
+            <strong>
+    {{ total_trips }}
+</strong>
+                
+
+            <small>
+                CSV kayıt sayısı
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <!-- Yolcu -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            <i class="fa-solid fa-users"></i>
+        </div>
+
+        <div class="stat-content">
+
+            <span>
+    KRİTİK DURAK
+</span>
+
+<strong>
+    {{ critical_stops }}
+</strong>
+
+<small>
+     Öncelik seviyesi: Kritik
+</small>
+
+        </div>
+
+    </div>
+
+
+    <!-- Aktif Hat -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            <i class="fa-solid fa-road"></i>
+        </div>
+
+        <div class="stat-content">
+
+            <span>
+                TOPLAM HAT
+            </span>
+
+            <strong>
+    {{ total_routes }}
+</strong>
+
+            <small>
+                Hizmet veren hat
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <!-- Doluluk -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            <i class="fa-solid fa-chart-pie"></i>
+        </div>
+
+        <div class="stat-content">
+
+            <span>
+    ORT. YOĞUNLUK
+</span>
+
+<strong>
+    {{ average_density }}
+</strong>
+
+<small>
+    Durak yoğunluk ortalaması
+</small>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================================
+     GRAFİKLER
+========================================= -->
+
+<div class="dashboard-charts">
+
+    <!-- Günlük Yolcu Grafiği -->
+
+    <div class="chart-card chart-large">
+
+        <div class="chart-header">
+
+            <div>
+
+                <span class="chart-label">
+    GÜZERGAH ANALİZİ
+</span>
+
+<h3>
+   Hatlara Göre Güzergah Yoğunluğu
+</h3>
+
+            </div>
+
+            <div class="chart-header-icon">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+            </div>
+
+        </div>
+
+        <div class="chart-container">
+
+            <canvas id="passengerChart"></canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- Araç Durumu -->
+
+    <div class="chart-card">
+
+        <div class="chart-header">
+
+            <div>
+
+                <span class="chart-label">
+    DURAK ANALİZİ
+</span>
+
+<h3>
+    Durak Öncelik Dağılımı
+</h3>
+
+            </div>
+
+            <div class="chart-header-icon">
+
+                <i class="fa-solid fa-chart-pie"></i>
+
+            </div>
+
+        </div>
+
+        <div class="chart-container chart-donut">
+
+            <canvas id="vehicleChart"></canvas>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Chart.js -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+/* =========================================
+   HATLARA GÖRE SEFER YOĞUNLUĞU
+========================================= */
+
+const passengerCanvas =
+    document.getElementById("passengerChart");
+
+if (passengerCanvas) {
+
+    new Chart(passengerCanvas, {
+
+        type: "bar",
+
+        data: {
+
+            labels: JSON.parse(
+                '{{ chart_route_labels | tojson | safe }}'
+            ),
+
+            datasets: [{
+
+                label: "Güzergah Kayıt Sayısı",
+
+                data: JSON.parse(
+                    '{{ chart_route_values | tojson | safe }}'
+                ),
+
+                borderWidth: 1,
+
+                borderRadius: 6
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            plugins: {
+
+                legend: {
+
+                    display: false
+
+                }
+
+            },
+
+            scales: {
+
+                y: {
+
+                    beginAtZero: true,
+
+                    ticks: {
+
+                        precision: 0
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    });
+
+}
+
+
+/* =========================================
+   DURAK YOĞUNLUK DAĞILIMI
+========================================= */
+
+const vehicleCanvas =
+    document.getElementById("vehicleChart");
+
+if (vehicleCanvas) {
+
+    new Chart(vehicleCanvas, {
+
+        type: "doughnut",
+
+        data: {
+
+            labels: JSON.parse(
+                '{{ chart_priority_labels | tojson | safe }}'
+            ),
+
+            datasets: [{
+
+                data: JSON.parse(
+                    '{{ chart_priority_values | tojson | safe }}'
+                ),
+
+                borderWidth: 3
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            cutout: "68%",
+
+            plugins: {
+
+                legend: {
+
+                    position: "bottom"
+
+                }
+
+            }
+
+        },
+
+        plugins: [
+
+            {
+
+                id: "centerText",
+
+                beforeDraw(chart) {
+
+                    const {
+                        ctx,
+                        chartArea
+                    } = chart;
+
+                    ctx.save();
+
+                    const centerX =
+                        (chartArea.left + chartArea.right) / 2;
+
+                    const centerY =
+                        (chartArea.top + chartArea.bottom) / 2;
+
+                    /* TOPLAM DURAK SAYISI */
+
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+
+                    ctx.font = "bold 28px Arial";
+                    ctx.fillStyle = "#0b1f3a";
+
+                    ctx.fillText(
+                        "{{ total_stops }}",
+                        centerX,
+                        centerY - 8
+                    );
+
+                    /* ALT YAZI */
+
+                    ctx.font = "13px Arial";
+                    ctx.fillStyle = "#64748b";
+
+                    ctx.fillText(
+                        "Toplam Durak",
+                        centerX,
+                        centerY + 20
+                    );
+
+                    ctx.restore();
+
+                }
+
+            }
+
+        ]
+
+    });
+
+}
+</script>
+
+<!-- =========================================
+     ALT BÖLÜM
+========================================= -->
+
+<div class="dashboard-bottom-grid">
+
+
+    <!-- =====================================
+         SON İŞLEMLER
+    ====================================== -->
+
+    <div class="dashboard-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span class="chart-label">
+                    SİSTEM AKTİVİTESİ
+                </span>
+
+                <h3>
+                    Son İşlemler
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-clock-rotate-left"></i>
+
+        </div>
+
+
+        <div class="activity-list">
+
+
+            <div class="activity-item">
+
+                <div class="activity-icon">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+
+                <div class="activity-content">
+
+                    <strong>
+                        Yeni kullanıcı oluşturuldu
+                    </strong>
+
+                    <span>
+                        Admin tarafından yeni kullanıcı eklendi.
+                    </span>
+
+                </div>
+
+                <time>
+                    5 dk
+                </time>
+
+            </div>
+
+
+            <div class="activity-item">
+
+                <div class="activity-icon">
+                    <i class="fa-solid fa-bus"></i>
+                </div>
+
+                <div class="activity-content">
+
+                    <strong>
+                        Araç bilgisi güncellendi
+                    </strong>
+
+                    <span>
+                        34 TP 4521 numaralı araç güncellendi.
+                    </span>
+
+                </div>
+
+                <time>
+                    18 dk
+                </time>
+
+            </div>
+
+
+            <div class="activity-item">
+
+                <div class="activity-icon">
+                    <i class="fa-solid fa-route"></i>
+                </div>
+
+                <div class="activity-content">
+
+                    <strong>
+                        Sefer planı güncellendi
+                    </strong>
+
+                    <span>
+                        500T hattının sefer planı güncellendi.
+                    </span>
+
+                </div>
+
+                <time>
+                    32 dk
+                </time>
+
+            </div>
+
+
+            <div class="activity-item">
+
+                <div class="activity-icon">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+
+                <div class="activity-content">
+
+                    <strong>
+                        Veri analizi tamamlandı
+                    </strong>
+
+                    <span>
+                        Günlük yolcu yoğunluğu analizi oluşturuldu.
+                    </span>
+
+                </div>
+
+                <time>
+                    1 sa
+                </time>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================
+         SİSTEM ÖZETİ
+    ====================================== -->
+
+    <div class="dashboard-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span class="chart-label">
+                    SİSTEM DURUMU
+                </span>
+
+                <h3>
+                    Sistem Özeti
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-server"></i>
+
+        </div>
+
+
+        <div class="system-summary">
+
+
+            <div class="summary-row">
+
+                <div>
+
+                    <i class="fa-solid fa-database"></i>
+
+                    <span>
+                        Veri Sistemi
+                    </span>
+
+                </div>
+
+                <strong class="status-online">
+                    Aktif
+                </strong>
+
+            </div>
+
+
+            <div class="summary-row">
+
+                <div>
+
+                    <i class="fa-solid fa-server"></i>
+
+                    <span>
+                        Sunucu
+                    </span>
+
+                </div>
+
+                <strong class="status-online">
+                    Çalışıyor
+                </strong>
+
+            </div>
+
+
+            <div class="summary-row">
+
+                <div>
+
+                    <i class="fa-solid fa-chart-line"></i>
+
+                    <span>
+                        Veri Güncelleme
+                    </span>
+
+                </div>
+
+                <strong>
+                    Güncel
+                </strong>
+
+            </div>
+
+
+            <div class="summary-row">
+
+                <div>
+
+                    <i class="fa-solid fa-shield-halved"></i>
+
+                    <span>
+                        Güvenlik
+                    </span>
+
+                </div>
+
+                <strong class="status-online">
+                    Güvenli
+                </strong>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

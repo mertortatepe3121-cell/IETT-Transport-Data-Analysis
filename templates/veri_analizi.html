@@ -1,0 +1,995 @@
+{% extends "base.html" %}
+
+{% block title %}Veri Analizi | İETT{% endblock %}
+
+{% block page_heading %}Veri Analizi{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-panel">
+
+    <!-- =====================================================
+         ÖZET KARTLARI
+    ====================================================== -->
+
+    <div class="dashboard-cards">
+
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <i class="fa-solid fa-route"></i>
+            </div>
+
+            <div>
+                <span>Toplam Sefer</span>
+                <strong>{{ total_trips }}</strong>
+            </div>
+        </div>
+
+
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div>
+                <span>Aktif Sefer</span>
+                <strong>{{ active_trips }}</strong>
+            </div>
+        </div>
+
+
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <i class="fa-solid fa-flag-checkered"></i>
+            </div>
+
+            <div>
+                <span>Tamamlanan</span>
+                <strong>{{ completed_trips }}</strong>
+            </div>
+        </div>
+
+
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+
+            <div>
+                <span>Ort. Sefer Süresi</span>
+                <strong>{{ average_duration }} dk</strong>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         BAŞLIK
+    ====================================================== -->
+
+    <div class="panel-header">
+
+        <div>
+
+            <span class="panel-subtitle">
+                VERİ ANALİZİ
+            </span>
+
+            <h2>
+                Sefer ve Hat Analizi
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FİLTRELER
+    ====================================================== -->
+
+  <!-- =====================================================
+     ANALİZ FİLTRELERİ
+====================================================== -->
+
+<div class="analysis-filter-panel">
+
+    <form
+        method="GET"
+        action="{{ url_for('veri_analizi') }}"
+        class="analysis-filters">
+
+        
+
+        <!-- HAT -->
+        <div class="analysis-filter-group">
+
+            <label for="line">
+                Hat
+            </label>
+
+            <div class="analysis-select-wrapper">
+
+                <select id="line" name="line">
+
+                    <option value="">
+                        Tümü
+                    </option>
+
+                    {% for line in lines %}
+
+                    <option
+                        value="{{ line }}"
+                        {% if selected_line == line %}selected{% endif %}>
+
+                        {{ line }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        
+
+        
+
+        <!-- BUTONLAR -->
+        <div class="analysis-filter-actions">
+
+            <button
+                type="submit"
+                class="analysis-filter-button">
+
+                <i class="fa-solid fa-filter"></i>
+                Filtrele
+
+            </button>
+
+            <a
+                href="{{ url_for('veri_analizi') }}"
+                class="analysis-clear-button">
+
+                <i class="fa-solid fa-rotate-left"></i>
+                Temizle
+
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+<!-- =====================================================
+     ANALİZ GRID
+====================================================== -->
+
+<div class="analysis-grid">
+
+    <!-- 1. HAT YOĞUNLUĞU -->
+    <div class="analysis-card">
+
+        <div class="analysis-card-header">
+
+            <div>
+                <span class="analysis-card-label">
+                    HAT ANALİZİ
+                </span>
+
+                <h3>
+                    Hat Yoğunluğu
+                </h3>
+
+                <p>
+                    En yoğun 10 hat
+                </p>
+            </div>
+
+            <i class="fa-solid fa-chart-bar"></i>
+
+        </div>
+
+        <div class="chart-container">
+            <canvas id="lineChart"></canvas>
+        </div>
+
+    </div>
+
+
+    <!-- 2. DURAK YOĞUNLUĞU -->
+    <div class="analysis-card">
+
+        <div class="analysis-card-header">
+
+            <div>
+                <span class="analysis-card-label">
+                    DURAK ANALİZİ
+                </span>
+
+                <h3>
+                    Durak Yoğunluğu
+                </h3>
+
+                <p>
+                    Yoğunluk endeksine göre en yoğun 10 durak
+                </p>
+            </div>
+
+            <i class="fa-solid fa-location-dot"></i>
+
+        </div>
+
+        <div class="chart-container">
+            <canvas id="stopChart"></canvas>
+        </div>
+
+    </div>
+
+
+    <!-- 3. HIZ DAĞILIMI -->
+    <div class="analysis-card">
+
+        <div class="analysis-card-header">
+
+            <div>
+                <span class="analysis-card-label">
+                    ARAÇ ANALİZİ
+                </span>
+
+                <h3>
+                    Hız Dağılımı
+                </h3>
+
+                <p>
+                    Araç hareketlerinin hız aralıklarına göre dağılımı
+                </p>
+            </div>
+
+            <i class="fa-solid fa-bus"></i>
+
+        </div>
+
+        <div class="chart-container">
+            <canvas id="vehicleChart"></canvas>
+        </div>
+
+    </div>
+
+
+    
+
+
+    <!-- =====================================================
+         ALT BİLGİ
+    ====================================================== -->
+
+    <div class="analysis-footer">
+
+        <span>
+            <i class="fa-solid fa-database"></i>
+            Veri kaynağı: Sistem veritabanı
+        </span>
+
+        <span>
+            <i class="fa-solid fa-chart-line"></i>
+            Analizler mevcut sefer kayıtlarına göre oluşturulmaktadır.
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     CHART.JS
+========================================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* =====================================================
+       1. HAT YOĞUNLUĞU
+    ====================================================== */
+
+    const lineLabels =
+        {{ line_labels | tojson }};
+
+    const lineValues =
+        {{ line_values | tojson }};
+
+    const lineCanvas =
+        document.getElementById("lineChart");
+
+    if (lineCanvas) {
+
+        new Chart(lineCanvas, {
+
+            type: "bar",
+
+            data: {
+
+                labels: lineLabels,
+
+                datasets: [
+                    {
+                        label: "Durak Kaydı",
+                        data: lineValues,
+                        backgroundColor: "#4f6df5",
+                        borderRadius: 5,
+                        borderSkipped: false,
+                        barThickness: 14
+                    }
+                ]
+
+            },
+
+            options: {
+
+                indexAxis: "y",
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    },
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function(context) {
+
+                                return (
+                                    " "
+                                    + context.raw
+                                    + " durak kaydı"
+                                );
+
+                            }
+
+                        }
+
+                    }
+
+                },
+
+                scales: {
+
+                    x: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0,
+                            color: "#64748b"
+                        },
+
+                        grid: {
+                            color: "rgba(100,116,139,0.12)"
+                        }
+
+                    },
+
+                    y: {
+
+                        ticks: {
+
+                            color: "#0f2747",
+
+                            font: {
+                                size: 12,
+                                weight: "600"
+                            }
+
+                        },
+
+                        grid: {
+                            display: false
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    /* =====================================================
+       2. DURAK YOĞUNLUĞU
+    ====================================================== */
+
+    const stopLabels =
+        {{ stop_labels | tojson }};
+
+    const stopValues =
+        {{ stop_values | tojson }};
+
+    const stopCanvas =
+        document.getElementById("stopChart");
+
+    if (stopCanvas) {
+
+        new Chart(stopCanvas, {
+
+            type: "bar",
+
+            data: {
+
+                labels: stopLabels,
+
+                datasets: [
+
+                    {
+                        label: "Yoğunluk Endeksi",
+                        data: stopValues,
+                        backgroundColor: "#f5c400",
+                        borderRadius: 5,
+                        borderSkipped: false,
+                        barThickness: 14
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                indexAxis: "y",
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    },
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function(context) {
+
+                                return (
+                                    " Yoğunluk: "
+                                    + context.raw
+                                );
+
+                            }
+
+                        }
+
+                    }
+
+                },
+
+                scales: {
+
+                    x: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            color: "#64748b"
+                        },
+
+                        grid: {
+                            color: "rgba(100,116,139,0.12)"
+                        }
+
+                    },
+
+                    y: {
+
+                        ticks: {
+
+                            color: "#0f2747",
+
+                            font: {
+                                size: 11,
+                                weight: "600"
+                            }
+
+                        },
+
+                        grid: {
+                            display: false
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    /* =====================================================
+       3. HIZ DAĞILIMI
+    ====================================================== */
+
+    const vehicleLabels =
+        {{ vehicle_labels | tojson }};
+
+    const vehicleValues =
+        {{ vehicle_values | tojson }};
+
+    const vehicleCanvas =
+        document.getElementById("vehicleChart");
+
+    if (vehicleCanvas) {
+
+        new Chart(vehicleCanvas, {
+
+            type: "bar",
+
+            data: {
+
+                labels: vehicleLabels,
+
+                datasets: [
+
+                    {
+                        label: "Hareket Kaydı",
+                        data: vehicleValues,
+                        backgroundColor: "#22a06b",
+                        borderRadius: 5,
+                        borderSkipped: false,
+                        barThickness: 14
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                indexAxis: "y",
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+
+                },
+
+                scales: {
+
+                    x: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+
+                            precision: 0,
+
+                            color: "#64748b"
+
+                        },
+
+                        grid: {
+                            color: "rgba(100,116,139,0.12)"
+                        }
+
+                    },
+
+                    y: {
+
+                        ticks: {
+
+                            color: "#0f2747",
+
+                            font: {
+                                size: 12,
+                                weight: "600"
+                            }
+
+                        },
+
+                        grid: {
+                            display: false
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+});
+
+</script>
+<style>
+
+.analysis-filter-panel {
+    background: #111827;
+    border: 1px solid #263244;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 18px;
+}
+
+.analysis-filters {
+    display: grid;
+    grid-template-columns: 1.35fr auto;
+    gap: 16px;
+    align-items: end;
+}
+
+.analysis-filter-group {
+    min-width: 0;
+}
+
+.analysis-filter-group label {
+    display: block;
+    color: #d7dee9;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+.analysis-select-wrapper,
+.analysis-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.analysis-select-wrapper select,
+.analysis-input-wrapper input {
+    width: 100%;
+    height: 42px;
+    background: #151e2d;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #f8fafc;
+    padding: 0 13px;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+/* Seçili filtre değerinin görünümü */
+.analysis-select-wrapper select {
+    background-color: #151e2d !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+}
+
+.analysis-select-wrapper select option {
+    background-color: #151e2d !important;
+    color: #f8fafc !important;
+}
+
+.analysis-select-wrapper select {
+    appearance: none;
+    cursor: pointer;
+}
+
+.analysis-select-wrapper select:focus,
+.analysis-input-wrapper input:focus {
+    border-color: #f5c400;
+}
+
+.analysis-select-wrapper select option {
+    background: #151e2d;
+    color: white;
+}
+
+
+
+.analysis-filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.analysis-filter-button {
+    height: 42px;
+    min-width: 120px;
+    border: none;
+    border-radius: 8px;
+    background: #f5c400;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.analysis-filter-button:hover {
+    background: #ffd21a;
+}
+
+.analysis-clear-button {
+    height: 42px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #151e2d;
+    color: #d7dee9;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.analysis-clear-button:hover {
+    background: #1e293b;
+    color: white;
+}
+
+@media (max-width: 1100px) {
+
+    .analysis-filters {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .analysis-filter-actions {
+        grid-column: span 2;
+    }
+
+}
+
+/* =====================================================
+   VERİ ANALİZİ - ANA GRID
+===================================================== */
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+
+/* =====================================================
+   ANALİZ KARTLARI
+===================================================== */
+
+.analysis-card {
+    background: #ffffff;
+    border: 1px solid #dbe3ee;
+    border-radius: 14px;
+    overflow: hidden;
+    min-width: 0;
+}
+
+
+/* =====================================================
+   KART BAŞLIĞI
+===================================================== */
+
+.analysis-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 24px 12px;
+}
+
+.analysis-card-header > div {
+    min-width: 0;
+}
+
+.analysis-card-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #52709a;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+}
+
+.analysis-card-header h3 {
+    margin: 0;
+    color: #071f3d;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.analysis-card-header p {
+    margin: 4px 0 0;
+    color: #17385f;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+
+/* =====================================================
+   KART İKONU
+===================================================== */
+
+.analysis-card-header > i {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #fff0f2;
+    color: #ef233c;
+
+    border-radius: 11px;
+    font-size: 16px;
+}
+
+
+/* =====================================================
+   GRAFİK ALANI
+===================================================== */
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    padding: 10px 20px 22px;
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   GRID İÇİNDEKİ TABLO
+===================================================== */
+
+.analysis-grid .table-wrapper {
+    padding: 4px 20px 20px;
+}
+
+.analysis-grid .user-table {
+    width: 100%;
+}
+
+
+/* =====================================================
+   ALTTAKİ SAATLİK TABLO
+===================================================== */
+
+.analysis-grid + .analysis-card {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .analysis-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+.analysis-table-info {
+    margin: 0 20px 20px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.analysis-table-info i {
+    margin-top: 2px;
+    color: #52709a;
+    flex-shrink: 0;
+}
+
+/* =====================================================
+   VERİ ANALİZİ - 3. KART DÜZENİ
+===================================================== */
+
+/* 3. kartı tam genişlik yap */
+.analysis-grid .analysis-card:nth-child(3) {
+    grid-column: 1 / -1;
+}
+
+/* Tam genişlikteki grafiği biraz daha geniş göster */
+.analysis-grid .analysis-card:nth-child(3) .chart-container {
+    height: 320px;
+}
+
+
+/* =====================================================
+   ALT BİLGİ
+===================================================== */
+
+.analysis-footer {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 20px;
+    padding: 16px 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    background: #f8fafc;
+    border: 1px solid #dbe3ee;
+    border-radius: 10px;
+
+    color: #52709a;
+    font-size: 12px;
+}
+
+.analysis-footer span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analysis-footer i {
+    color: #ef233c;
+}
+
+
+/* =====================================================
+   MOBİL
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .analysis-grid .analysis-card:nth-child(3) {
+        grid-column: auto;
+    }
+
+    .analysis-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+}
+
+</style>
+
+{% endblock %}

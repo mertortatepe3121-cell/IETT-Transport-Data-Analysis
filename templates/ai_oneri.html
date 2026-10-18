@@ -1,0 +1,834 @@
+{% extends "base.html" %}
+
+{% block title %}AI Sefer Önerisi | İETT{% endblock %}
+
+{% block page_heading %}AI Sefer Önerisi{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-panel">
+
+    <!-- =====================================================
+         ÜST ÖZET KARTLARI
+    ====================================================== -->
+
+    <div class="dashboard-cards">
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+
+            <div>
+                <span>Toplam Öneri</span>
+                <strong>{{ total_recommendations }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+
+            <div>
+                <span>Ortalama Güven</span>
+                <strong>%{{ average_confidence }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-route"></i>
+            </div>
+
+            <div>
+                <span>Analiz Edilen Hat</span>
+                <strong>{{ lines|length }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-lightbulb"></i>
+            </div>
+
+            <div>
+                <span>AI Durumu</span>
+                <strong>Hazır</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         BAŞLIK
+    ====================================================== -->
+
+    <div class="panel-header">
+
+        <div>
+
+            <span class="panel-subtitle">
+                YAPAY ZEKA DESTEKLİ OPTİMİZASYON
+            </span>
+
+            <h2>
+                AI Sefer Önerisi
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ANA İÇERİK
+    ====================================================== -->
+
+    <div class="ai-layout">
+
+
+        <!-- =================================================
+             ÖNERİ PARAMETRELERİ
+        ================================================== -->
+
+        <div class="analysis-card ai-parameter-card">
+
+            <div class="analysis-card-header">
+
+                <div>
+
+                    <span class="analysis-card-label">
+                        ÖNERİ PARAMETRELERİ
+                    </span>
+
+                    <h3>
+                        Analiz Bilgilerini Gir
+                    </h3>
+
+                </div>
+
+                <i class="fa-solid fa-sliders"></i>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="{{ url_for('ai_oneri_olustur') }}"
+                class="ai-form">
+
+
+                <!-- HAT -->
+
+                <div class="form-group">
+
+                    <label for="aiLine">
+                        Hat
+                    </label>
+
+                    <select
+                        id="aiLine"
+                        name="line_number"
+                        required>
+
+                        <option value="">
+                            Hat seçiniz
+                        </option>
+
+                        {% for line in lines %}
+
+                        <option value="{{ line }}">
+                            {{ line }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+               <!-- KAPI NO -->
+
+<div class="form-group">
+
+    <label for="aiVehicle">
+        Kapı No
+    </label>
+
+    <select
+        id="aiVehicle"
+         name="kapi_no"
+        required>
+
+        <option value="">
+            Önce hat seçiniz
+        </option>
+
+    </select>
+
+</div>
+
+
+                <!-- GÜN TİPİ -->
+
+                <div class="form-group">
+
+                    <label for="dayType">
+                        Gün Tipi
+                    </label>
+
+                    <select
+                        id="dayType"
+                        name="day_type"
+                        required>
+
+                        <option value="hafta_ici">
+                            Hafta İçi
+                        </option>
+
+                        <option value="cumartesi">
+                            Cumartesi
+                        </option>
+
+                        <option value="pazar">
+                            Pazar
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- SAATLER -->
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="aiStartTime">
+                            Başlangıç Saati
+                        </label>
+
+                        <input
+                            type="time"
+                            id="aiStartTime"
+                            name="start_time"
+                            required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="aiEndTime">
+                            Bitiş Saati
+                        </label>
+
+                        <input
+                            type="time"
+                            id="aiEndTime"
+                            name="end_time"
+                            required>
+
+                    </div>
+
+                </div>
+
+
+               
+
+                <!-- AMAÇ -->
+
+                <div class="form-group">
+
+                    <label for="purpose">
+                        Analiz Amacı
+                    </label>
+
+                    <select
+                        id="purpose"
+                        name="analysis_purpose"
+                        required>
+
+                        <option value="">
+                            Analiz amacı seçiniz
+                        </option>
+
+                        <option value="ek_sefer">
+                            Ek Sefer İhtiyacı
+                        </option>
+
+                        <option value="arac_dagilimi">
+                            Araç Dağılımı
+                        </option>
+
+                        <option value="sefer_sikligi">
+                            Sefer Sıklığı Optimizasyonu
+                        </option>
+
+                        <option value="yogunluk">
+                            Yoğunluk Analizi
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- BUTONLAR -->
+
+<div class="ai-form-buttons">
+
+    <button
+        type="submit"
+        class="primary-btn ai-generate-button">
+
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+        AI Önerisi Oluştur
+
+    </button>
+
+    <button
+        type="button"
+        class="ai-clear-button"
+        onclick="clearAIForm()">
+
+        <i class="fa-solid fa-rotate-left"></i>
+
+        Temizle
+
+    </button>
+
+</div>
+
+            </form>
+
+        </div>
+
+
+        <!-- =================================================
+             AI SONUCU
+        ================================================== -->
+
+        <div class="analysis-card ai-result-card">
+
+            <div class="analysis-card-header">
+
+                <div>
+
+                    <span class="analysis-card-label">
+                        YAPAY ZEKA ANALİZİ
+                    </span>
+
+                    <h3>
+                        Öneri Sonucu
+                    </h3>
+
+                </div>
+
+                <i class="fa-solid fa-brain"></i>
+
+            </div>
+
+
+            {% if latest_recommendation %}
+
+<div class="ai-result-content">
+
+    <div class="ai-result-main">
+
+        <div class="ai-result-icon">
+            <i class="fa-solid fa-robot"></i>
+        </div>
+
+        <div>
+
+            <span class="analysis-card-label">
+                AI ÖNERİSİ
+            </span>
+
+            <h3>
+                {{ latest_recommendation[1] }} Hattı İçin Öneri
+            </h3>
+
+        </div>
+
+    </div>
+
+
+    <div class="ai-recommendation-text">
+
+        {{ latest_recommendation[6] }}
+
+    </div>
+
+
+    <div class="ai-result-grid">
+
+        <div class="ai-result-item">
+
+            <span>Yoğunluk</span>
+
+            <strong>
+                {{ latest_recommendation[5] }}
+            </strong>
+
+        </div>
+
+
+        <div class="ai-result-item">
+
+            <span>Ek Araç</span>
+
+            <strong>
+                {{ latest_recommendation[7] }}
+            </strong>
+
+        </div>
+
+
+        <div class="ai-result-item">
+
+            <span>Sefer Sıklığı</span>
+
+            <strong>
+                {{ latest_recommendation[8] }}
+            </strong>
+
+        </div>
+
+
+        <div class="ai-result-item">
+
+            <span>Güven</span>
+
+            <strong>
+                %{{ latest_recommendation[10] }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="ai-confidence">
+
+        <div class="ai-confidence-header">
+
+            <span>
+                Öneri Güveni
+            </span>
+
+            <strong>
+                %{{ latest_recommendation[10] }}
+            </strong>
+
+        </div>
+
+
+        <div class="ai-confidence-bar">
+
+            <div
+                class="ai-confidence-progress"
+                style="width: {{ latest_recommendation[10] }}%;">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% else %}
+
+<div class="ai-empty-state">
+
+    <div class="ai-empty-icon">
+
+        <i class="fa-solid fa-robot"></i>
+
+    </div>
+
+    <h3>
+        Henüz öneri oluşturulmadı
+    </h3>
+
+    <p>
+        Sol taraftaki parametreleri doldurarak
+        AI destekli sefer önerisi oluşturabilirsiniz.
+    </p>
+
+</div>
+
+{% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ANALİZ ÖZETİ
+    ====================================================== -->
+
+    <div class="analysis-card">
+
+        <div class="analysis-card-header">
+
+            <div>
+
+                <span class="analysis-card-label">
+                    ANALİZ ÖZETİ
+                </span>
+
+                <h3>
+                    Sistem Verileri
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-chart-simple"></i>
+
+        </div>
+
+
+        <div class="ai-summary-grid">
+
+            <div class="ai-summary-item">
+
+                <span>Toplam Sefer</span>
+
+                <strong>
+                    {{ total_recommendations }}
+                </strong>
+
+            </div>
+
+
+            <div class="ai-summary-item">
+
+                <span>Analiz Edilen Hat</span>
+
+                <strong>
+                    {{ lines|length }}
+                </strong>
+
+            </div>
+
+
+            <div class="ai-summary-item">
+
+                <span>Tanımlı Araç</span>
+
+                <strong>
+                    {{ vehicles|length }}
+                </strong>
+
+            </div>
+
+
+            <div class="ai-summary-item">
+
+                <span>AI Güveni</span>
+
+                <strong>
+                    %{{ average_confidence }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ÖNERİ GEÇMİŞİ
+    ====================================================== -->
+
+    <div class="analysis-card">
+
+        <div class="analysis-card-header">
+
+            <div>
+
+                <span class="analysis-card-label">
+                    GEÇMİŞ ÖNERİLER
+                </span>
+
+                <h3>
+                    AI Öneri Geçmişi
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-clock-rotate-left"></i>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="user-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>HAT</th>
+
+                        <th>ARAÇ</th>
+
+                        <th>SAAT</th>
+
+                        <th>YOĞUNLUK</th>
+
+                        <th>EK ARAÇ</th>
+
+                        <th>SIKLIK</th>
+
+                        <th>GÜVEN</th>
+
+                        <th>TARİH</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for recommendation in recommendations %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                {{ recommendation[1] }}
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+                            {{ recommendation[12] or "-" }}
+                        </td>
+
+
+                        <td>
+
+                            {{ recommendation[3] or "-" }}
+
+                            -
+
+                            {{ recommendation[4] or "-" }}
+
+                        </td>
+
+
+                        <td>
+                            {{ recommendation[5] or "-" }}
+                        </td>
+
+
+                        <td>
+                            {{ recommendation[7] }}
+                        </td>
+
+
+                        <td>
+                            {{ recommendation[8] or "-" }}
+                        </td>
+
+
+                        <td>
+
+                            <strong>
+                                %{{ recommendation[10] }}
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+                            {{ recommendation[11] }}
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            style="text-align:center; padding:40px;">
+
+                            Henüz oluşturulmuş AI önerisi bulunmuyor.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const lineSelect = document.getElementById("aiLine");
+    const kapiSelect = document.getElementById("aiVehicle");
+
+    if (!lineSelect || !kapiSelect) {
+        return;
+    }
+
+    lineSelect.addEventListener("change", async function () {
+
+        const lineNumber = this.value;
+
+        // Hat seçilmediyse
+        if (!lineNumber) {
+
+            kapiSelect.innerHTML = `
+                <option value="">
+                    Önce hat seçiniz
+                </option>
+            `;
+
+            kapiSelect.disabled = true;
+
+            return;
+        }
+
+        // Yükleniyor
+        kapiSelect.innerHTML = `
+            <option value="">
+                Kapı No'lar yükleniyor...
+            </option>
+        `;
+
+        kapiSelect.disabled = true;
+
+        try {
+
+            const response = await fetch(
+                `/api/ai_kapi_nolari/${encodeURIComponent(lineNumber)}`
+            );
+
+            const kapiNolari = await response.json();
+
+            kapiSelect.innerHTML = "";
+
+            // Hiç Kapı No bulunamadıysa
+            if (!kapiNolari.length) {
+
+                kapiSelect.innerHTML = `
+                    <option value="">
+                        Bu hatta ait Kapı No bulunamadı
+                    </option>
+                `;
+
+                kapiSelect.disabled = true;
+
+                return;
+            }
+
+            // Varsayılan seçenek
+            kapiSelect.innerHTML = `
+                <option value="">
+                    Kapı No seçiniz
+                </option>
+            `;
+
+            // Gerçek Kapı No'ları ekle
+            kapiNolari.forEach(function (kapiNo) {
+
+                const option = document.createElement("option");
+
+                option.value = kapiNo;
+
+                option.textContent = kapiNo;
+
+                kapiSelect.appendChild(option);
+
+            });
+
+            kapiSelect.disabled = false;
+
+        } catch (error) {
+
+            console.error(
+                "Kapı No verileri alınamadı:",
+                error
+            );
+
+            kapiSelect.innerHTML = `
+                <option value="">
+                    Kapı No verisi alınamadı
+                </option>
+            `;
+
+            kapiSelect.disabled = true;
+        }
+
+    });
+
+});
+
+
+function clearAIForm() {
+
+    const form = document.querySelector('.ai-form');
+
+    if (!form) return;
+
+    form.querySelector('#aiLine').value = '';
+
+    form.querySelector('#aiVehicle').innerHTML = `
+        <option value="">
+            Önce hat seçiniz
+        </option>
+    `;
+
+    form.querySelector('#aiVehicle').disabled = true;
+
+    form.querySelector('#dayType').value = '';
+
+    form.querySelector('#aiStartTime').value = '';
+
+    form.querySelector('#aiEndTime').value = '';
+
+    form.querySelector('#purpose').value = '';
+}
+
+</script>
+
+{% endblock %}

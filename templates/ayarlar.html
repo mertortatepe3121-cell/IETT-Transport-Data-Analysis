@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+
+{% block title %}Ayarlar | İETT{% endblock %}
+
+{% block page_heading %}Ayarlar{% endblock %}
+
+{% block content %}
+
+<div class="settings-panel">
+
+    <!-- =====================================================
+         GÖRÜNÜM AYARLARI
+         ===================================================== -->
+
+    <div class="settings-card">
+
+        <div class="settings-card-header">
+
+            <div>
+
+                <span class="settings-label">
+                    GÖRÜNÜM
+                </span>
+
+                <h3>
+                    Tema Ayarları
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-palette"></i>
+
+        </div>
+
+        <div class="theme-options">
+
+    <div class="theme-option active">
+
+        <i class="fa-solid fa-sun"></i>
+
+        <div>
+            <strong>Açık Tema</strong>
+            <span>Standart açık arayüz kullan</span>
+        </div>
+
+    </div>
+
+
+
+</div>
+        
+<!-- =====================================================
+     BİLDİRİM AYARLARI
+     ===================================================== -->
+
+<div class="settings-card">
+
+        <div class="settings-card-header">
+
+            <div>
+
+                <span class="settings-label">
+                    BİLDİRİMLER
+                </span>
+
+                <h3>
+                    Bildirim Ayarları
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-bell"></i>
+
+        </div>
+
+
+        <div class="settings-options">
+
+
+            <!-- SİSTEM BİLDİRİMLERİ -->
+
+            <div class="settings-option-row">
+
+                <div>
+
+                    <strong>
+                        Sistem Bildirimleri
+                    </strong>
+
+                    <span>
+                        Sistemle ilgili bildirimleri göster
+                    </span>
+
+                </div>
+
+                <label class="settings-switch">
+
+                    <input
+                        type="checkbox"
+                        id="systemNotifications"
+                        checked
+                    >
+
+                    <span class="settings-slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <!-- AI BİLDİRİMLERİ -->
+
+            <div class="settings-option-row">
+
+                <div>
+
+                    <strong>
+                        AI Sefer Önerileri
+                    </strong>
+
+                    <span>
+                        AI önerileriyle ilgili bildirimleri göster
+                    </span>
+
+                </div>
+
+                <label class="settings-switch">
+
+                    <input
+                        type="checkbox"
+                        id="aiNotifications"
+                        checked
+                    >
+
+                    <span class="settings-slider"></span>
+
+                </label>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         VERİ YENİLEME
+         ===================================================== -->
+
+    <div class="settings-card">
+
+        <div class="settings-card-header">
+
+            <div>
+
+                <span class="settings-label">
+                    SİSTEM
+                </span>
+
+                <h3>
+                    Veri Yenileme
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-arrows-rotate"></i>
+
+        </div>
+
+
+        <div class="settings-options">
+
+
+            <!-- OTOMATİK YENİLEME -->
+
+            <div class="settings-option-row">
+
+                <div>
+
+                    <strong>
+                        Otomatik Veri Yenileme
+                    </strong>
+
+                    <span>
+                        Sistem verilerini otomatik olarak yenile
+                    </span>
+
+                </div>
+
+                <label class="settings-switch">
+
+                    <input
+                        type="checkbox"
+                        id="autoRefresh"
+                        checked
+                    >
+
+                    <span class="settings-slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <!-- YENİLEME SÜRESİ -->
+
+            <div class="settings-option-row">
+
+                <div>
+
+                    <strong>
+                        Yenileme Aralığı
+                    </strong>
+
+                    <span>
+                        Verilerin yenilenme sıklığını belirle
+                    </span>
+
+                </div>
+
+
+                <select id="refreshInterval">
+
+                    <option value="30">
+                        30 saniye
+                    </option>
+
+                    <option value="60" selected>
+                        1 dakika
+                    </option>
+
+                    <option value="300">
+                        5 dakika
+                    </option>
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SİSTEM BİLGİLERİ
+         ===================================================== -->
+
+    <div class="settings-card">
+
+        <div class="settings-card-header">
+
+            <div>
+
+                <span class="settings-label">
+                    SİSTEM BİLGİLERİ
+                </span>
+
+                <h3>
+                    Sistem Bilgileri
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-circle-info"></i>
+
+        </div>
+
+
+        <div class="system-info-grid">
+
+
+            <div class="system-info-item">
+
+                <span>
+                    Sistem
+                </span>
+
+                <strong>
+                    İETT Veri Analiz
+                </strong>
+
+            </div>
+
+
+            <div class="system-info-item">
+
+                <span>
+                    Versiyon
+                </span>
+
+                <strong>
+                    1.0.0
+                </strong>
+
+            </div>
+
+
+            <div class="system-info-item">
+
+                <span>
+                    Veritabanı
+                </span>
+
+                <strong class="database-status">
+
+                    <i class="fa-solid fa-circle"></i>
+
+                    Bağlı
+
+                </strong>
+
+            </div>
+
+
+            <div class="system-info-item">
+
+                <span>
+                    Dil
+                </span>
+
+                <strong>
+                    Türkçe
+                </strong>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         KAYDET BUTONLARI
+         ===================================================== -->
+
+    <div class="settings-actions">
+
+        <button
+            type="button"
+            class="settings-reset-btn"
+            id="resetSettings"
+        >
+
+            <i class="fa-solid fa-rotate-left"></i>
+
+            Varsayılanlara Dön
+
+        </button>
+
+
+        <button
+            type="button"
+            class="settings-save-btn"
+            id="saveSettings"
+        >
+
+            <i class="fa-solid fa-floppy-disk"></i>
+
+            Ayarları Kaydet
+
+        </button>
+
+    </div>
+
+
+    <!-- BAŞARI MESAJI -->
+
+    <div
+        id="settingsMessage"
+        class="settings-message"
+    ></div>
+
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const systemNotifications =
+        document.getElementById("systemNotifications");
+
+    const aiNotifications =
+        document.getElementById("aiNotifications");
+
+    const autoRefresh =
+        document.getElementById("autoRefresh");
+
+    const refreshInterval =
+        document.getElementById("refreshInterval");
+
+    const saveButton =
+        document.getElementById("saveSettings");
+
+    const resetButton =
+        document.getElementById("resetSettings");
+
+    const message =
+        document.getElementById("settingsMessage");
+
+
+    /* =========================================
+       VARSAYILAN AYARLAR
+    ========================================= */
+
+    const defaultSettings = {
+        systemNotifications: true,
+        aiNotifications: true,
+        autoRefresh: true,
+        refreshInterval: "60"
+    };
+
+
+    /* =========================================
+       MESAJ GÖSTER
+    ========================================= */
+
+    function showMessage(text) {
+
+        message.textContent = text;
+        message.className = "settings-message success";
+        message.style.display = "block";
+
+        setTimeout(function () {
+            message.style.display = "none";
+        }, 2500);
+    }
+
+
+    /* =========================================
+       KAYITLI AYARLARI YÜKLE
+    ========================================= */
+
+    function loadSettings() {
+
+        const savedSettings =
+            localStorage.getItem("iettSettings");
+
+        if (!savedSettings) {
+            return;
+        }
+
+        try {
+
+            const settings =
+                JSON.parse(savedSettings);
+
+            systemNotifications.checked =
+                settings.systemNotifications;
+
+            aiNotifications.checked =
+                settings.aiNotifications;
+
+            autoRefresh.checked =
+                settings.autoRefresh;
+
+            refreshInterval.value =
+                settings.refreshInterval;
+
+        } catch (error) {
+
+            console.error(
+                "Ayarlar yüklenemedi:",
+                error
+            );
+        }
+    }
+
+
+    /* =========================================
+       AYARLARI KAYDET
+    ========================================= */
+
+    saveButton.addEventListener("click", function () {
+
+        const settings = {
+
+            systemNotifications:
+                systemNotifications.checked,
+
+            aiNotifications:
+                aiNotifications.checked,
+
+            autoRefresh:
+                autoRefresh.checked,
+
+            refreshInterval:
+                refreshInterval.value
+        };
+
+        localStorage.setItem(
+            "iettSettings",
+            JSON.stringify(settings)
+        );
+
+        showMessage(
+            "Ayarlar başarıyla kaydedildi."
+        );
+    });
+
+
+    /* =========================================
+       VARSAYILANLARA DÖN
+    ========================================= */
+
+    resetButton.addEventListener("click", function () {
+
+        systemNotifications.checked =
+            defaultSettings.systemNotifications;
+
+        aiNotifications.checked =
+            defaultSettings.aiNotifications;
+
+        autoRefresh.checked =
+            defaultSettings.autoRefresh;
+
+        refreshInterval.value =
+            defaultSettings.refreshInterval;
+
+        localStorage.removeItem("iettSettings");
+
+        showMessage(
+            "Ayarlar varsayılan değerlere döndürüldü."
+        );
+    });
+
+
+    /* =========================================
+       SAYFA AÇILINCA AYARLARI YÜKLE
+    ========================================= */
+
+    loadSettings();
+
+});
+</script>
+
+
+
+
+{% endblock %}
+
+

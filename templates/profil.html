@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}Profil | İETT{% endblock %}
+
+{% block page_heading %}Profil{% endblock %}
+
+{% block content %}
+
+<div class="profile-panel">
+
+    <!-- PROFİL BAŞLIĞI -->
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            <i class="fa-solid fa-user"></i>
+        </div>
+
+        <div>
+
+            <span class="profile-label">
+                HESAP PROFİLİ
+            </span>
+
+            <h2>
+                {{ user[1] }}
+            </h2>
+
+            <p>
+                {% if user[2] == "admin" %}
+                    Yönetici Hesabı
+                {% else %}
+                    Personel Hesabı
+                {% endif %}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- KULLANICI BİLGİLERİ -->
+
+    <div class="profile-info-card">
+
+        <div class="profile-card-header">
+
+            <div>
+
+                <span class="profile-label">
+                    HESAP BİLGİLERİ
+                </span>
+
+                <h3>
+                    Kullanıcı Bilgileri
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-id-card"></i>
+
+        </div>
+
+
+        <div class="profile-info-grid">
+
+            <!-- KULLANICI ADI -->
+
+            <div class="profile-info-item">
+
+                <span>
+                    Kullanıcı Adı
+                </span>
+
+                <strong>
+                    {{ user[1] }}
+                </strong>
+
+            </div>
+
+
+            <!-- ROL -->
+
+            <div class="profile-info-item">
+
+                <span>
+                    Rol
+                </span>
+
+                <strong>
+                    {% if user[2] == "admin" %}
+                        Yönetici
+                    {% else %}
+                        Personel
+                    {% endif %}
+                </strong>
+
+            </div>
+
+
+            <!-- DURUM -->
+
+            <div class="profile-info-item">
+
+                <span>
+                    Hesap Durumu
+                </span>
+
+                <strong>
+                    {{ user[3] }}
+                </strong>
+
+            </div>
+
+
+            <!-- KULLANICI ID -->
+
+            <div class="profile-info-item">
+
+                <span>
+                    Kullanıcı ID
+                </span>
+
+                <strong>
+                    #{{ user[0] }}
+                </strong>
+
+            </div>
+
+        </div>
+
+        </div>
+
+
+    <!-- PROFİL DÜZENLEME -->
+
+    <div class="profile-info-card">
+
+        <div class="profile-card-header">
+
+            <div>
+
+                <span class="profile-label">
+                    PROFİL DÜZENLE
+                </span>
+
+                <h3>
+                    Kullanıcı Bilgilerini Güncelle
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-pen-to-square"></i>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('profil') }}"
+        >
+
+            <div class="profile-info-item">
+
+                <span>
+                    Kullanıcı Adı
+                </span>
+
+                <input
+                    type="text"
+                    name="username"
+                    value="{{ user[1] }}"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="primary-btn"
+            >
+
+                <i class="fa-solid fa-floppy-disk"></i>
+
+                Değişiklikleri Kaydet
+
+            </button>
+
+        </form>
+
+    </div>
+
+        <!-- ŞİFRE DEĞİŞTİRME -->
+
+    <div class="profile-info-card">
+
+        <div class="profile-card-header">
+
+            <div>
+
+                <span class="profile-label">
+                    GÜVENLİK
+                </span>
+
+                <h3>
+                    Şifre Değiştir
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-lock"></i>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('profil') }}"
+        >
+
+            <!-- MEVCUT ŞİFRE -->
+
+            <div class="profile-info-item">
+
+                <span>
+                    Mevcut Şifre
+                </span>
+
+                <input
+                    type="password"
+                    name="current_password"
+                    placeholder="Mevcut şifrenizi girin"
+                    required
+                >
+
+            </div>
+
+
+            <!-- YENİ ŞİFRE -->
+
+            <div class="profile-info-item">
+
+                <span>
+                    Yeni Şifre
+                </span>
+
+                <input
+                    type="password"
+                    name="new_password"
+                    placeholder="Yeni şifrenizi girin"
+                    required
+                >
+
+            </div>
+
+
+            <!-- YENİ ŞİFRE TEKRAR -->
+
+            <div class="profile-info-item">
+
+                <span>
+                    Yeni Şifre Tekrar
+                </span>
+
+                <input
+                    type="password"
+                    name="confirm_password"
+                    placeholder="Yeni şifrenizi tekrar girin"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="primary-btn"
+            >
+
+                <i class="fa-solid fa-key"></i>
+
+                Şifreyi Güncelle
+
+            </button>
+
+            {% if password_error %}
+
+    <div class="profile-message error">
+
+        <i class="fa-solid fa-circle-exclamation"></i>
+
+        <span>
+            {{ password_error }}
+        </span>
+
+    </div>
+
+{% endif %}
+
+
+{% if password_success %}
+
+    <div class="profile-message success">
+
+        <i class="fa-solid fa-circle-check"></i>
+
+        <span>
+            {{ password_success }}
+        </span>
+
+    </div>
+
+{% endif %}
+
+        </form>
+
+    </div>
+
+
+</div>
+
+{% endblock %}

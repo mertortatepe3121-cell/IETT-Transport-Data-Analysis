@@ -1,0 +1,915 @@
+{% extends "base.html" %}
+
+{% block title %}Raporlar | İETT{% endblock %}
+
+{% block page_heading %}Raporlar{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-panel">
+
+    <!-- =====================================================
+         RAPOR ÖZET KARTLARI
+    ====================================================== -->
+
+    <div class="dashboard-cards">
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-route"></i>
+            </div>
+
+            <div>
+                <span>Toplam Sefer</span>
+                <strong>{{ total_trips }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-play"></i>
+            </div>
+
+            <div>
+                <span>Aktif Sefer</span>
+                <strong>{{ active_trips }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div>
+                <span>Tamamlanan</span>
+                <strong>{{ completed_trips }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-ban"></i>
+            </div>
+
+            <div>
+                <span>İptal Edilen</span>
+                <strong>{{ cancelled_trips }}</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RAPOR BAŞLIĞI
+    ====================================================== -->
+
+    <div class="panel-header">
+
+        <div>
+
+            <span class="panel-subtitle">
+                SİSTEM RAPORLARI
+            </span>
+
+            <h2>
+                Raporlar
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FİLTRELER
+    ====================================================== -->
+
+    <div class="analysis-filter-panel">
+
+        <div class="analysis-filter-title">
+
+            <i class="fa-solid fa-filter"></i>
+
+            <span>Rapor Filtreleri</span>
+
+        </div>
+
+
+        <form
+            method="GET"
+            action="{{ url_for('raporlar') }}"
+            class="analysis-filters">
+
+
+            <!-- HAT -->
+
+            <div class="analysis-filter-group">
+
+                <label for="report_line">
+                    Hat
+                </label>
+
+                <select
+                    id="report_line"
+                    name="line">
+
+                    <option value="">
+                        Tüm Hatlar
+                    </option>
+
+                    {% for line in lines %}
+
+                    <option
+                        value="{{ line }}"
+                        {% if selected_line == line %}selected{% endif %}>
+
+                        {{ line }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- DURUM -->
+
+            <div class="analysis-filter-group">
+
+                <label for="report_status">
+                    Durum
+                </label>
+
+                <select
+                    id="report_status"
+                    name="status">
+
+                    <option value="">
+                        Tüm Durumlar
+                    </option>
+
+                    <option
+                        value="aktif"
+                        {% if selected_status == "aktif" %}selected{% endif %}>
+
+                        Aktif
+
+                    </option>
+
+                    <option
+                        value="tamamlandi"
+                        {% if selected_status == "tamamlandi" %}selected{% endif %}>
+
+                        Tamamlandı
+
+                    </option>
+
+                    <option
+                        value="iptal"
+                        {% if selected_status == "iptal" %}selected{% endif %}>
+
+                        İptal
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+          
+
+
+            <!-- BUTONLAR -->
+
+            <div class="analysis-filter-actions">
+
+                <button
+                    type="submit"
+                    class="primary-btn analysis-filter-button">
+
+                    <i class="fa-solid fa-filter"></i>
+
+                    Filtrele
+
+                </button>
+
+                <a
+    href="{{ url_for('raporlar_pdf',
+        line=selected_line,
+        status=selected_status,
+        
+    ) }}"
+    class="secondary-btn report-export-btn"
+>
+    <i class="fa-solid fa-file-pdf"></i>
+    PDF İndir
+</a>
+
+
+<a
+    href="{{ url_for('raporlar_excel',
+        line=selected_line,
+        status=selected_status,
+        
+    ) }}"
+    class="secondary-btn report-export-btn"
+>
+    <i class="fa-solid fa-file-excel"></i>
+    Excel İndir
+</a>
+
+
+                <a
+                    href="{{ url_for('raporlar') }}"
+                    class="analysis-clear-button">
+
+                    <i class="fa-solid fa-rotate-left"></i>
+
+                    Temizle
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- =====================================================
+     GERÇEK CSV VERİ ANALİZİ
+     ===================================================== -->
+
+<div class="analysis-card csv-analysis-card">
+
+    <div class="analysis-card-header">
+
+        <div>
+
+            <span class="analysis-card-label">
+                GERÇEK VERİ ANALİZİ
+            </span>
+
+            <h3>
+                CSV Veri Özeti
+            </h3>
+
+        </div>
+
+        <i class="fa-solid fa-file-csv"></i>
+
+    </div>
+
+
+    <div class="csv-summary-grid">
+
+
+        <!-- CSV KAYIT -->
+
+        <div class="csv-summary-item">
+
+            <span>
+                CSV Kayıt Sayısı
+            </span>
+
+            <strong>
+                {{ "{:,}".format(csv_record_count).replace(",", ".") }}
+            </strong>
+
+            <small>
+                Toplam gerçek veri
+            </small>
+
+        </div>
+
+
+        <!-- HAREKETLİ ARAÇ -->
+
+        <div class="csv-summary-item">
+
+            <span>
+                Hareketli Araç
+            </span>
+
+            <strong>
+                {{ "{:,}".format(csv_moving_vehicle_count).replace(",", ".") }}
+            </strong>
+
+            <small>
+                Hareket halinde
+            </small>
+
+        </div>
+
+
+        <!-- FARKLI ARAÇ -->
+
+        <div class="csv-summary-item">
+
+            <span>
+                Farklı Araç
+            </span>
+
+            <strong>
+                {{ "{:,}".format(csv_total_vehicle_count).replace(",", ".") }}
+            </strong>
+
+            <small>
+                CSV'deki araçlar
+            </small>
+
+        </div>
+
+
+        <!-- ORTALAMA HIZ -->
+
+        <div class="csv-summary-item">
+
+            <span>
+                Ortalama Hız
+            </span>
+
+            <strong>
+                {{ csv_average_speed }}
+            </strong>
+
+            <small>
+                km/sa
+            </small>
+
+        </div>
+
+
+        <!-- YOĞUNLUK SKORU -->
+
+        <div class="csv-summary-item">
+
+            <span>
+                Yoğunluk Skoru
+            </span>
+
+            <strong>
+                {{ csv_density_score }}
+                <small>/ 100</small>
+            </strong>
+
+            <small>
+                Gerçek veri skoru
+            </small>
+
+        </div>
+
+
+        <!-- OTOMATİK YOĞUNLUK -->
+
+        <div class="csv-summary-item">
+
+            <span>
+                Otomatik Yoğunluk
+            </span>
+
+            <strong class="csv-density-value">
+                {{ csv_automatic_density|capitalize }}
+            </strong>
+
+            <small>
+                Sistem analizi
+            </small>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+    <!-- =====================================================
+         SEFER RAPORU
+    ====================================================== -->
+
+    <div class="analysis-card">
+
+        <div class="analysis-card-header">
+
+            <div>
+
+                <span class="analysis-card-label">
+                    SEFER RAPORU
+                </span>
+
+                <h3>
+                    Hat Bazlı Seferler
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-route"></i>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="user-table">
+
+                <thead>
+
+    <tr>
+
+        <th>HAT</th>
+        <th>DURAK SAYISI</th>
+        <th>ORT. YOĞUNLUK</th>
+        <th>KRİTİK DURAK</th>
+
+    </tr>
+
+</thead>
+
+
+               <tbody>
+
+    {% for report in trip_reports %}
+
+    <tr>
+
+        <!-- HAT -->
+        <td>
+            <strong>{{ report[0] }}</strong>
+        </td>
+
+        <!-- DURAK SAYISI -->
+        <td>
+            {{ report[1] }}
+        </td>
+
+        <!-- ORTALAMA YOĞUNLUK -->
+        <td>
+            {{ report[2] }}
+        </td>
+
+        <!-- KRİTİK DURAK -->
+        <td>
+            {{ report[3] }}
+        </td>
+
+    </tr>
+
+    {% else %}
+
+    <tr>
+
+        <td
+            colspan="4"
+            style="text-align:center; padding:40px;">
+
+            Hat raporu bulunamadı.
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</tbody>
+            </table>
+
+            {% if total_pages > 1 %}
+
+<div class="pagination">
+
+    {% if page > 1 %}
+        <a href="?page={{ page - 1 }}{% if selected_line %}&line={{ selected_line }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_start_time %}&start_time={{ selected_start_time }}{% endif %}{% if selected_end_time %}&end_time={{ selected_end_time }}{% endif %}">
+            ← Önceki
+        </a>
+    {% endif %}
+
+
+    {% if page > 3 %}
+
+        <a href="?page=1{% if selected_line %}&line={{ selected_line }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_start_time %}&start_time={{ selected_start_time }}{% endif %}{% if selected_end_time %}&end_time={{ selected_end_time }}{% endif %}">
+            1
+        </a>
+
+        <span class="pagination-dots">...</span>
+
+    {% endif %}
+
+
+    {% if page > 2 %}
+
+        <a href="?page={{ page - 2 }}{% if selected_line %}&line={{ selected_line }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+            {{ page - 2 }}
+        </a>
+
+    {% endif %}
+
+
+    {% if page > 1 %}
+
+        <a href="?page={{ page - 1 }}{% if selected_line %}&line={{ selected_line }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+            {{ page - 1 }}
+        </a>
+
+    {% endif %}
+
+
+    <a
+        href="?page={{ page }}{% if selected_line %}&line={{ selected_line }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}"
+        class="active"
+    >
+        {{ page }}
+    </a>
+
+
+    {% if page < total_pages %}
+
+        <a href="?page={{ page + 1 }}{% if selected_line %}&line={{ selected_line }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+            {{ page + 1 }}
+        </a>
+
+    {% endif %}
+
+
+    {% if page < total_pages - 1 %}
+
+        <a href="?page={{ page + 2 }}{% if selected_line %}&line={{ selected_line }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+            {{ page + 2 }}
+        </a>
+
+    {% endif %}
+
+
+    {% if page < total_pages - 2 %}
+
+        <span class="pagination-dots">...</span>
+
+        <a href="?page={{ total_pages }}{% if selected_line %}&line={{ selected_line }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+            {{ total_pages }}
+        </a>
+
+    {% endif %}
+
+
+    {% if page < total_pages %}
+
+        <a href="?page={{ page + 1 }}{% if selected_line %}&line={{ selected_line }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+            Sonraki →
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+</div>  <!-- table-wrapper kapanışı -->
+</div>  <!-- Hat Bazlı Seferler analysis-card kapanışı -->
+
+<!-- =====================================================
+     ARAÇ RAPORU
+====================================================== -->
+
+<div class="analysis-card">
+
+        <div class="analysis-card-header">
+
+            <div>
+
+                <span class="analysis-card-label">
+                    ARAÇ RAPORU
+                </span>
+
+                <h3>
+                    Araç Kullanım Durumu
+                </h3>
+
+            </div>
+
+            <i class="fa-solid fa-bus"></i>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="user-table">
+
+                <thead>
+    <tr>
+        <th>KAPI NO</th>
+        <th>ARAÇ</th>
+        <th>HAREKET KAYDI</th>
+        <th>HAREKET HALİNDE</th>
+        <th>ORT. HIZ</th>
+    </tr>
+</thead>
+
+
+                <tbody>
+
+                    {% for report in vehicle_reports %}
+
+                    <tr>
+
+                        <td>
+                            <strong>{{ report[0] }}</strong>
+                        </td>
+
+                        <td>
+                            {{ report[1] }}
+                        </td>
+
+                        <td>
+                            {{ report[2] }}
+                        </td>
+
+                        <td>
+                            {{ report[3] }}
+                        </td>
+
+                        <td>
+                            {{ report[4] }}
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            style="text-align:center; padding:40px;">
+
+                            Araç raporu bulunamadı.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+{% if vehicle_total_pages > 1 %}
+
+<div class="pagination">
+
+    {% if vehicle_page > 1 %}
+        <a href="?vehicle_page={{ vehicle_page - 1 }}">
+            ← Önceki
+        </a>
+    {% endif %}
+
+    {% if vehicle_page > 3 %}
+        <a href="?vehicle_page=1">1</a>
+
+        <span class="pagination-dots">...</span>
+    {% endif %}
+
+    {% if vehicle_page > 2 %}
+        <a href="?vehicle_page={{ vehicle_page - 2 }}">
+            {{ vehicle_page - 2 }}
+        </a>
+    {% endif %}
+
+    {% if vehicle_page > 1 %}
+        <a href="?vehicle_page={{ vehicle_page - 1 }}">
+            {{ vehicle_page - 1 }}
+        </a>
+    {% endif %}
+
+    <a
+        href="?vehicle_page={{ vehicle_page }}"
+        class="active"
+    >
+        {{ vehicle_page }}
+    </a>
+
+    {% if vehicle_page < vehicle_total_pages %}
+        <a href="?vehicle_page={{ vehicle_page + 1 }}">
+            {{ vehicle_page + 1 }}
+        </a>
+    {% endif %}
+
+    {% if vehicle_page < vehicle_total_pages - 1 %}
+        <a href="?vehicle_page={{ vehicle_page + 2 }}">
+            {{ vehicle_page + 2 }}
+        </a>
+    {% endif %}
+
+    {% if vehicle_page < vehicle_total_pages - 2 %}
+
+        <span class="pagination-dots">...</span>
+
+        <a href="?vehicle_page={{ vehicle_total_pages }}">
+            {{ vehicle_total_pages }}
+        </a>
+
+    {% endif %}
+
+    {% if vehicle_page < vehicle_total_pages %}
+        <a href="?vehicle_page={{ vehicle_page + 1 }}">
+            Sonraki →
+        </a>
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+    </div>
+
+
+</div>
+
+<!-- =====================================================
+     DURAK RAPORU
+====================================================== -->
+
+<div class="analysis-card">
+
+    <div class="analysis-card-header">
+
+        <div>
+
+            <span class="analysis-card-label">
+                DURAK RAPORU
+            </span>
+
+            <h3>
+                Durak Kullanım Durumu
+            </h3>
+
+        </div>
+
+        <i class="fa-solid fa-location-dot"></i>
+
+    </div>
+
+
+    <div class="table-wrapper">
+
+        <table class="user-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>DURAK KODU</th>
+
+                    <th>DURAK ADI</th>
+
+                    <th>İLÇE</th>
+
+                    <th>ADRES</th>
+
+                    <th>DURUM</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for report in stop_reports %}
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            {{ report[0] }}
+                        </strong>
+                    </td>
+
+                    <td>
+                        {{ report[1] }}
+                    </td>
+
+                    <td>
+                        {{ report[2] }}
+                    </td>
+
+                    <td>
+                        {{ report[3] or "-" }}
+                    </td>
+
+                    <td>
+                        {{ report[4] }}
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="5"
+                        style="text-align:center; padding:40px;">
+
+                        Durak raporu bulunamadı.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+{% if stop_total_pages > 1 %}
+
+<div class="pagination">
+
+    {% if stop_page > 1 %}
+        <a href="?stop_page={{ stop_page - 1 }}">
+            ← Önceki
+        </a>
+    {% endif %}
+
+    {% if stop_page > 3 %}
+        <a href="?stop_page=1">1</a>
+
+        <span class="pagination-dots">...</span>
+    {% endif %}
+
+    {% if stop_page > 2 %}
+        <a href="?stop_page={{ stop_page - 2 }}">
+            {{ stop_page - 2 }}
+        </a>
+    {% endif %}
+
+    {% if stop_page > 1 %}
+        <a href="?stop_page={{ stop_page - 1 }}">
+            {{ stop_page - 1 }}
+        </a>
+    {% endif %}
+
+    <a
+        href="?stop_page={{ stop_page }}"
+        class="active"
+    >
+        {{ stop_page }}
+    </a>
+
+    {% if stop_page < stop_total_pages %}
+        <a href="?stop_page={{ stop_page + 1 }}">
+            {{ stop_page + 1 }}
+        </a>
+    {% endif %}
+
+    {% if stop_page < stop_total_pages - 1 %}
+        <a href="?stop_page={{ stop_page + 2 }}">
+            {{ stop_page + 2 }}
+        </a>
+    {% endif %}
+
+    {% if stop_page < stop_total_pages - 2 %}
+
+        <span class="pagination-dots">...</span>
+
+        <a href="?stop_page={{ stop_total_pages }}">
+            {{ stop_total_pages }}
+        </a>
+
+    {% endif %}
+
+    {% if stop_page < stop_total_pages %}
+        <a href="?stop_page={{ stop_page + 1 }}">
+            Sonraki →
+        </a>
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+{% endblock %} 

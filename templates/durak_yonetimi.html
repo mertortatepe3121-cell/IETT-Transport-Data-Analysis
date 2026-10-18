@@ -1,0 +1,782 @@
+{% extends "base.html" %}
+
+{% block title %}Durak Yönetimi | İETT{% endblock %}
+
+{% block page_heading %}Durak Yönetimi{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-panel">
+
+    <!-- ================= DURAK ÖZET KARTLARI ================= -->
+
+    <div class="dashboard-cards">
+
+        <!-- TOPLAM -->
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-location-dot"></i>
+            </div>
+
+            <div>
+                <span>Toplam Durak</span>
+
+                <strong>
+                    {{ total_stops }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- AKTİF -->
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div>
+                <span>Aktif</span>
+
+                <strong>
+                    {{ active_stops }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- BAKIMDA -->
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+            </div>
+
+            <div>
+                <span>Bakımda</span>
+
+                <strong>
+                    {{ maintenance_stops }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- PASİF -->
+        <div class="dashboard-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </div>
+
+            <div>
+                <span>Pasif</span>
+
+                <strong>
+                    {{ passive_stops }}
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= PANEL BAŞLIĞI ================= -->
+
+    <div class="panel-header">
+
+        <div>
+
+            <span class="panel-subtitle">
+                DURAK YÖNETİMİ
+            </span>
+
+            <h2>
+                Durak Yönetimi
+            </h2>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="primary-btn"
+            onclick="openStopModal()">
+
+            <i class="fa-solid fa-plus"></i>
+
+            Yeni Durak
+
+        </button>
+
+    </div>
+
+
+    <!-- ================= ARAMA ================= -->
+
+    <form method="GET" action="{{ url_for('durak_yonetimi') }}" class="user-toolbar">
+
+    <div class="user-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+            type="text"
+            id="stopSearch"
+            name="search"
+            value="{{ search }}"
+            placeholder="Durak adı, kodu veya ilçe ara..."
+            autocomplete="off"
+        >
+    </div>
+    <button
+    type="button"
+    class="clear-stop-search"
+    onclick="filterStops()">
+
+    Filtrele
+
+</button>
+
+    <button
+        type="button"
+        class="clear-stop-search"
+        onclick="clearStopSearch()">
+        <i class="fa-solid fa-rotate-left"></i>
+        Temizle
+    </button>
+
+</form>
+
+    <!-- ================= DURAK TABLOSU ================= -->
+
+    <div class="table-wrapper">
+
+        <table class="user-table stop-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>DURAK KODU</th>
+
+                    <th>DURAK ADI</th>
+
+                    <th>İLÇE</th>
+
+                    <th>ADRES</th>
+
+                    <th>DURUM</th>
+
+                    <th>İŞLEMLER</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for stop in stops %}
+
+                <tr>
+
+                    <!-- DURAK KODU -->
+
+                    <td>
+
+                        <strong>
+                            {{ stop[1] }}
+                        </strong>
+
+                    </td>
+
+
+                    <!-- DURAK ADI -->
+
+                    <td>
+
+                        {{ stop[2] }}
+
+                    </td>
+
+
+                    <!-- İLÇE -->
+
+                    <td>
+
+                        {{ stop[3] }}
+
+                    </td>
+
+
+                    <!-- ADRES -->
+
+                    <td>
+
+                        {{ stop[4] or "-" }}
+
+                    </td>
+
+
+                    <!-- DURUM -->
+
+                    <td>
+
+                        {% if stop[7] == "aktif" %}
+
+                            <span class="status-badge active">
+                                Aktif
+                            </span>
+
+                        {% elif stop[7] == "bakimda" %}
+
+                            <span class="status-badge maintenance">
+                                Bakımda
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-badge passive">
+                                Pasif
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- İŞLEMLER -->
+
+                    <td>
+
+                        <div class="action-buttons">
+
+                            <button
+    type="button"
+    class="edit-stop-btn"
+    data-stop-id="{{ stop[0] }}"
+    data-stop-code="{{ stop[1] }}"
+    data-stop-name="{{ stop[2] }}"
+    data-district="{{ stop[3] }}"
+    data-address="{{ stop[4] or '' }}"
+    data-latitude="{{ stop[5] or '' }}"
+    data-longitude="{{ stop[6] or '' }}"
+    data-status="{{ stop[7] }}"
+    title="Düzenle">
+
+    <i class="fa-solid fa-pen"></i>
+
+</button>
+
+
+                            <button
+                                type="button"
+                                class="delete-stop-btn"
+                                data-stop-id="{{ stop[0] }}"
+                                title="Sil">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </button>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        style="text-align:center; padding:40px;">
+
+                        Henüz kayıtlı durak bulunmuyor.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+        <!-- ================= DURAK SAYFALAMA ================= -->
+
+{% if total_pages > 1 %}
+
+<div class="pagination">
+
+    {% if page > 1 %}
+
+        <a href="?page={{ page - 1 }}">
+            ← Önceki
+        </a>
+
+    {% endif %}
+
+
+    {% if page > 3 %}
+
+        <a href="?page=1">
+            1
+        </a>
+
+        <span class="pagination-dots">
+            ...
+        </span>
+
+    {% endif %}
+
+
+    {% set start_page = [1, page - 2]|max %}
+    {% set end_page = [total_pages, page + 2]|min %}
+
+
+    {% for p in range(start_page, end_page + 1) %}
+
+        <a
+            href="?page={{ p }}"
+            class="{% if p == page %}active{% endif %}"
+        >
+            {{ p }}
+        </a>
+
+    {% endfor %}
+
+
+    {% if page < total_pages - 2 %}
+
+        <span class="pagination-dots">
+            ...
+        </span>
+
+        <a href="?page={{ total_pages }}">
+            {{ total_pages }}
+        </a>
+
+    {% endif %}
+
+
+    {% if page < total_pages %}
+
+        <a href="?page={{ page + 1 }}">
+            Sonraki →
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     YENİ DURAK MODALI
+========================================================= -->
+
+<div
+    id="stopModal"
+    class="user-modal">
+
+    <div class="user-modal-content">
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="panel-subtitle">
+                    DURAK YÖNETİMİ
+                </span>
+
+                <h2>
+                    Yeni Durak Ekle
+                </h2>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeStopModal()">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <form
+            id="stopForm"
+            method="POST"
+            action="{{ url_for('durak_ekle') }}">
+
+
+            <!-- DURAK KODU -->
+
+            <div class="form-group">
+
+                <label for="stopCode">
+                    Durak Kodu
+                </label>
+
+                <input
+                    type="text"
+                    id="stopCode"
+                    name="stop_code"
+                    placeholder="Örn. D-001"
+                    required>
+
+            </div>
+
+
+            <!-- DURAK ADI -->
+
+            <div class="form-group">
+
+                <label for="stopName">
+                    Durak Adı
+                </label>
+
+                <input
+                    type="text"
+                    id="stopName"
+                    name="stop_name"
+                    placeholder="Durak adı"
+                    required>
+
+            </div>
+
+
+            <!-- İLÇE -->
+
+            <div class="form-group">
+
+                <label for="stopDistrict">
+                    İlçe
+                </label>
+
+                <input
+                    type="text"
+                    id="stopDistrict"
+                    name="district"
+                    placeholder="İlçe"
+                    required>
+
+            </div>
+
+
+            <!-- ADRES -->
+
+            <div class="form-group">
+
+                <label for="stopAddress">
+                    Adres
+                </label>
+
+                <input
+                    type="text"
+                    id="stopAddress"
+                    name="address"
+                    placeholder="Durak adresi">
+
+            </div>
+
+
+            <!-- KOORDİNATLAR -->
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="stopLatitude">
+                        Enlem
+                    </label>
+
+                    <input
+                        type="number"
+                        step="any"
+                        id="stopLatitude"
+                        name="latitude"
+                        placeholder="Örn. 41.0678">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="stopLongitude">
+                        Boylam
+                    </label>
+
+                    <input
+                        type="number"
+                        step="any"
+                        id="stopLongitude"
+                        name="longitude"
+                        placeholder="Örn. 29.0001">
+
+                </div>
+
+            </div>
+
+
+            <!-- DURUM -->
+
+            <div class="form-group">
+
+                <label for="stopStatus">
+                    Durum
+                </label>
+
+                <select
+                    id="stopStatus"
+                    name="status"
+                    required>
+
+                    <option value="aktif">
+                        Aktif
+                    </option>
+
+                    <option value="bakimda">
+                        Bakımda
+                    </option>
+
+                    <option value="pasif">
+                        Pasif
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- BUTONLAR -->
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="closeStopModal()">
+
+                    İptal
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-btn">
+
+                    <i class="fa-solid fa-check"></i>
+
+                    Kaydet
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   DURAK MODALI
+========================================= */
+
+function openStopModal() {
+
+    document
+        .getElementById("stopModal")
+        .classList.add("show");
+
+}
+
+
+function closeStopModal() {
+
+    document
+        .getElementById("stopModal")
+        .classList.remove("show");
+
+}
+
+
+/* =========================================
+   DURAK ARAMA
+========================================= */
+
+const stopSearch = document.getElementById("stopSearch");
+
+if (stopSearch) {
+
+    let searchTimer;
+
+    stopSearch.addEventListener("input", function () {
+
+        clearTimeout(searchTimer);
+
+        const searchValue = this.value.trim();
+
+        searchTimer = setTimeout(function () {
+
+            const url = new URL(window.location.href);
+
+            if (searchValue) {
+
+                url.searchParams.set("search", searchValue);
+                url.searchParams.set("page", "1");
+
+            } else {
+
+                url.searchParams.delete("search");
+                url.searchParams.set("page", "1");
+
+            }
+
+            window.location.href = url.toString();
+
+        }, 500);
+
+    });
+
+}
+
+/* =========================================
+   DURAK FİLTRELEME
+========================================= */
+
+function filterStops() {
+
+    const searchValue =
+        document.getElementById("stopSearch").value.trim();
+
+    if (searchValue === "") {
+        return;
+    }
+
+    window.location.href =
+        "/durak_yonetimi?search=" +
+        encodeURIComponent(searchValue);
+}
+
+
+/* =========================================
+   DURAK TEMİZLE
+========================================= */
+
+function clearStopSearch() {
+
+    window.location.href =
+        "/durak_yonetimi";
+}
+    /* =========================================
+   DURAK DÜZENLEME
+========================================= */
+
+document.querySelectorAll(".edit-stop-btn").forEach(function (button) {
+
+    button.addEventListener("click", function () {
+
+        const stopId = this.dataset.stopId;
+
+        const form = document.getElementById("stopForm");
+
+        form.action = "/durak_duzenle/" + stopId;
+
+        document.getElementById("stopCode").value =
+            this.dataset.stopCode;
+
+        document.getElementById("stopName").value =
+            this.dataset.stopName;
+
+        document.getElementById("stopDistrict").value =
+            this.dataset.district;
+
+        document.getElementById("stopAddress").value =
+            this.dataset.address;
+
+        document.getElementById("stopLatitude").value =
+            this.dataset.latitude;
+
+        document.getElementById("stopLongitude").value =
+            this.dataset.longitude;
+
+        document.getElementById("stopStatus").value =
+            this.dataset.status;
+
+        document
+            .getElementById("stopModal")
+            .classList.add("show");
+
+    });
+
+});
+
+/* =========================================
+   DURAK SİL
+========================================= */
+
+document.querySelectorAll(".delete-stop-btn").forEach(function (button) {
+
+    button.addEventListener("click", function () {
+
+        const stopId = this.dataset.stopId;
+
+        const confirmed = confirm(
+            "Bu durağı silmek istediğinize emin misiniz?"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        fetch("/durak_sil/" + stopId, {
+            method: "POST"
+        })
+        .then(function (response) {
+
+            if (!response.ok) {
+                throw new Error("Silme işlemi başarısız.");
+            }
+
+            window.location.reload();
+
+        })
+        .catch(function (error) {
+
+            console.error("Silme hatası:", error);
+
+            alert(
+                "Durak silinirken bir hata oluştu."
+            );
+
+        });
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

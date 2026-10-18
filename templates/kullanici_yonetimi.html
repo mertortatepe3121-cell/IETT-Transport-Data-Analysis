@@ -1,0 +1,778 @@
+{% extends "base.html" %}
+
+{% block title %}
+Kullanıcı Yönetimi | İETT
+{% endblock %}
+
+{% block page_heading %}
+Kullanıcı Yönetimi
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-panel">
+
+    <!-- ÜST BAŞLIK -->
+    <div class="panel-header">
+
+        <div>
+            <span class="chart-label">
+                SİSTEM YÖNETİMİ
+            </span>
+
+            <h3>
+                Kullanıcılar
+            </h3>
+        </div>
+
+        <button type="button"
+        class="user-add-btn"
+        onclick="openUserModal()">
+    <i class="fa-solid fa-user-plus"></i>
+    Yeni Kullanıcı
+</button>
+
+    </div>
+
+
+    <!-- ARAMA -->
+    <div class="user-toolbar">
+
+        <div class="user-toolbar">
+
+    <div class="user-search">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+            type="text"
+            id="userSearch"
+            placeholder="Kullanıcı ara..."
+            value="{{ search }}"
+        >
+
+    </div>
+
+    <button
+        type="button"
+        class="clear-search-btn"
+        onclick="filterUsers()">
+        Filtrele
+    </button>
+
+    <button
+        type="button"
+        class="clear-search-btn"
+        onclick="clearUserSearch()">
+        <i class="fa-solid fa-rotate-left"></i>
+        Temizle
+    </button>
+
+</div>
+    </div>
+
+
+    <!-- KULLANICI TABLOSU -->
+    <div class="user-table-wrapper">
+
+        <table class="user-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Kullanıcı</th>
+
+                    <th>Rol</th>
+
+                    <th>Durum</th>
+
+                    <th>İşlemler</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <!-- ADMIN -->
+                {% for user in users %}
+
+<tr>
+
+    <td>
+
+        <div class="user-info">
+
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+
+            <div>
+
+                <strong>
+                    {{ user[1] }}
+                </strong>
+
+                <span>
+                    {% if user[2] == "admin" %}
+                        Yönetici hesabı
+                    {% else %}
+                        Personel hesabı
+                    {% endif %}
+                </span>
+
+            </div>
+
+        </div>
+
+    </td>
+
+
+    <td>
+
+        {% if user[2] == "admin" %}
+
+            <span class="role-badge role-admin">
+                Admin
+            </span>
+
+        {% else %}
+
+            <span class="role-badge role-personel">
+                Personel
+            </span>
+
+        {% endif %}
+
+    </td>
+
+
+    <td>
+
+        {% if user[3] == "aktif" %}
+
+            <span class="status-badge status-active">
+                Aktif
+            </span>
+
+       {% else %}
+
+    <span class="status-badge status-inactive">
+        Pasif
+    </span>
+
+{% endif %}
+
+    </td>
+
+
+    <td>
+
+        <div class="user-actions">
+
+            <button type="button"
+        class="edit-user-btn"
+        data-user-id="{{ user[0] }}"
+        title="Düzenle">
+
+    <i class="fa-solid fa-pen"></i>
+
+</button>
+
+
+            <button type="button"
+        class="delete-user-btn"
+        data-user-id="{{ user[0] }}"
+        title="Sil">
+
+    <i class="fa-solid fa-trash"></i>
+
+</button>
+
+        </div>
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+
+                
+
+            </tbody>
+
+        </table>
+        <!-- KULLANICI SAYFALAMA -->
+
+{% if total_pages > 1 %}
+
+<div class="pagination">
+
+    {% if page > 1 %}
+
+        <a href="?page={{ page - 1 }}">
+            ← Önceki
+        </a>
+
+    {% endif %}
+
+
+    {% if page > 3 %}
+
+        <a href="?page=1">
+            1
+        </a>
+
+        <span class="pagination-dots">
+            ...
+        </span>
+
+    {% endif %}
+
+
+    {% set start_page = [1, page - 2]|max %}
+    {% set end_page = [total_pages, page + 2]|min %}
+
+
+    {% for p in range(start_page, end_page + 1) %}
+
+        <a
+            href="?page={{ p }}"
+            class="{% if p == page %}active{% endif %}"
+        >
+            {{ p }}
+        </a>
+
+    {% endfor %}
+
+
+    {% if page < total_pages - 2 %}
+
+        <span class="pagination-dots">
+            ...
+        </span>
+
+        <a href="?page={{ total_pages }}">
+            {{ total_pages }}
+        </a>
+
+    {% endif %}
+
+
+    {% if page < total_pages %}
+
+        <a href="?page={{ page + 1 }}">
+            Sonraki →
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+    </div>
+
+</div>
+
+<!-- =========================================
+     YENİ KULLANICI MODALI
+========================================= -->
+
+<div id="userModal" class="user-modal">
+
+    <div class="user-modal-content">
+
+        <div class="user-modal-header">
+
+            <div>
+                <span class="page-label">
+                    KULLANICI YÖNETİMİ
+                </span>
+
+                <h3>
+                    Yeni Kullanıcı
+                </h3>
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    onclick="closeUserModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+        <form method="POST" action="{{ url_for('kullanici_ekle') }}">
+        <div class="user-form">
+
+            <div class="form-group">
+
+                <label>
+                    Kullanıcı Adı
+                </label>
+
+                <input
+    type="text"
+    id="newUsername"
+    name="username"
+    placeholder="Kullanıcı adı girin"
+    required
+>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Şifre
+                </label>
+
+                <input
+    type="password"
+    id="newPassword"
+    name="password"
+    placeholder="Şifre girin"
+    required
+>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Rol
+                </label>
+
+                <select id="newRole" name="role">
+
+                    <option value="personel">
+                        Personel
+                    </option>
+
+                    <option value="admin">
+                        Admin
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Durum
+                </label>
+
+                <select id="newStatus" name="status">
+
+                    <option value="aktif">
+                        Aktif
+                    </option>
+
+                    <option value="pasif">
+                        Pasif
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="user-modal-footer">
+
+            <button type="button"
+                    class="modal-cancel"
+                    onclick="closeUserModal()">
+                İptal
+            </button>
+
+            <button type="submit"
+                    class="modal-save">
+                <i class="fa-solid fa-check"></i>
+                Kullanıcı Oluştur
+            </button>
+
+        </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- DÜZENLEME MODALI -->
+
+<div id="editUserModal" class="user-modal">
+
+    <div class="user-modal-content">
+
+        <div class="user-modal-header">
+
+            <div>
+
+                <span class="page-label">
+                    KULLANICI YÖNETİMİ
+                </span>
+
+                <h3>
+                    Kullanıcı Düzenle
+                </h3>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeEditUserModal()">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <div class="user-form">
+
+            <div class="form-group">
+
+                <label>
+                    Kullanıcı Adı
+                </label>
+
+                <input
+                    type="text"
+                    id="editUsername"
+                    placeholder="Kullanıcı adı"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Şifre
+                </label>
+
+                <input
+                    type="password"
+                    id="editPassword"
+                    placeholder="Şifre"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Rol
+                </label>
+
+                <select id="editRole">
+
+                    <option value="personel">
+                        Personel
+                    </option>
+
+                    <option value="admin">
+                        Admin
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Durum
+                </label>
+
+                <select id="editStatus">
+
+                    <option value="aktif">
+                        Aktif
+                    </option>
+
+                    <option value="pasif">
+                        Pasif
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="user-modal-footer">
+
+            <button
+                type="button"
+                class="modal-cancel"
+                onclick="closeEditUserModal()">
+
+                İptal
+
+            </button>
+
+
+            <button
+                type="button"
+                class="modal-save"
+                id="updateUserBtn">
+
+                <i class="fa-solid fa-check"></i>
+
+                Değişiklikleri Kaydet
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* =========================================
+   YENİ KULLANICI MODALI
+========================================= */
+
+function openUserModal() {
+
+    document.getElementById("userModal").classList.add("show");
+
+}
+
+
+function closeUserModal() {
+
+    document.getElementById("userModal").classList.remove("show");
+
+}
+
+
+/* =========================================
+   DÜZENLEME MODALI KAPAT
+========================================= */
+
+function closeEditUserModal() {
+
+    document.getElementById("editUserModal").classList.remove("show");
+
+}
+
+
+/* =========================================
+   KULLANICI DÜZENLE
+========================================= */
+
+document.querySelectorAll(".edit-user-btn").forEach(function (button) {
+
+    button.addEventListener("click", function () {
+
+        const userId = this.dataset.userId;
+
+        document.getElementById("updateUserBtn").dataset.userId = userId;
+
+        fetch("/kullanici_getir/" + userId)
+
+            .then(response => response.json())
+
+            .then(user => {
+
+                document.getElementById("editUsername").value = user.username;
+
+                document.getElementById("editPassword").value = user.password;
+
+                document.getElementById("editRole").value = user.role;
+
+                document.getElementById("editStatus").value = user.status;
+
+                document
+                    .getElementById("editUserModal")
+                    .classList
+                    .add("show");
+
+            });
+
+    });
+
+});
+
+
+/* =========================================
+   KULLANICI GÜNCELLE
+========================================= */
+
+document
+    .getElementById("updateUserBtn")
+    .addEventListener("click", function () {
+
+        const userId = this.dataset.userId;
+
+        const username =
+            document.getElementById("editUsername").value;
+
+        const password =
+            document.getElementById("editPassword").value;
+
+        const role =
+            document.getElementById("editRole").value;
+
+        const status =
+            document.getElementById("editStatus").value;
+
+
+        const formData = new URLSearchParams();
+
+        formData.append("user_id", userId);
+
+        formData.append("username", username);
+
+        formData.append("password", password);
+
+        formData.append("role", role);
+
+        formData.append("status", status);
+
+
+        fetch("/kullanici_guncelle", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/x-www-form-urlencoded"
+            },
+
+            body: formData
+
+        })
+
+        .then(response => {
+
+            if (response.ok) {
+
+                window.location.href =
+                    "/kullanici_yonetimi";
+
+            }
+
+        });
+
+    });
+
+
+/* =========================================
+   KULLANICI SİL
+========================================= */
+
+document
+    .querySelectorAll(".delete-user-btn")
+    .forEach(function (button) {
+
+        button.addEventListener("click", function () {
+
+            const userId = this.dataset.userId;
+
+
+            const confirmed = confirm(
+                "Bu kullanıcıyı silmek istediğinize emin misiniz?"
+            );
+
+
+            if (!confirmed) {
+
+                return;
+
+            }
+
+
+            fetch("/kullanici_sil/" + userId, {
+
+                method: "POST"
+
+            })
+
+            .then(response => {
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Silme işlemi başarısız."
+                    );
+
+                }
+
+
+                window.location.href =
+                    "/kullanici_yonetimi";
+
+            })
+
+            .catch(error => {
+
+                console.error(
+                    "Silme hatası:",
+                    error
+                );
+
+                alert(
+                    "Kullanıcı silinirken bir hata oluştu."
+                );
+
+            });
+
+        });
+
+    });
+
+    /* =========================================
+   KULLANICI FİLTRELEME
+========================================= */
+
+function filterUsers() {
+
+    const searchValue =
+        document.getElementById("userSearch").value.trim();
+
+    if (searchValue === "") {
+        return;
+    }
+
+    window.location.href =
+        "/kullanici_yonetimi?search=" +
+        encodeURIComponent(searchValue);
+}
+
+
+/* =========================================
+   KULLANICI TEMİZLE
+========================================= */
+
+function clearUserSearch() {
+
+    window.location.href =
+        "/kullanici_yonetimi";
+}
+
+
+</script>
+
+{% endblock %} 

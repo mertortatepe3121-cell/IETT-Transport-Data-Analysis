@@ -1,0 +1,1165 @@
+{% extends "base.html" %}
+
+{% block title %}Araç Yönetimi | İETT{% endblock %}
+
+{% block page_heading %}Araç Yönetimi{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-panel">
+
+    <!-- ================= ARAÇ ÖZET KARTLARI ================= -->
+
+<div class="dashboard-cards">
+
+    <!-- TOPLAM ARAÇ -->
+
+    <div class="dashboard-card">
+
+        <div class="card-icon">
+            <i class="fa-solid fa-bus"></i>
+        </div>
+
+        <div>
+
+            <span>Toplam Araç</span>
+
+            <strong>
+                {{ total_vehicles }}
+            </strong>
+
+            <small>
+                Sistemde kayıtlı
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <!-- AKTİF ARAÇ -->
+
+    <div class="dashboard-card">
+
+        <div class="card-icon">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+
+        <div>
+
+            <span>Aktif Araç</span>
+
+            <strong>
+                {{ active_vehicles }}
+            </strong>
+
+            <small>
+                Hizmet veren araçlar
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <!-- PASİF ARAÇ -->
+
+    <div class="dashboard-card">
+
+        <div class="card-icon">
+            <i class="fa-solid fa-circle-xmark"></i>
+        </div>
+
+        <div>
+
+            <span>Pasif Araç</span>
+
+            <strong>
+                {{ passive_vehicles }}
+            </strong>
+
+            <small>
+                Hizmet dışı araçlar
+            </small>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <div class="panel-header">
+
+        <div>
+
+            <span class="page-label">
+                FİLO YÖNETİMİ
+            </span>
+
+            <h3>
+                Araç Yönetimi
+            </h3>
+
+        </div>
+
+        <button type="button"
+        class="user-add-btn"
+        onclick="openVehicleModal()">
+
+            <i class="fa-solid fa-plus"></i>
+
+            Yeni Araç
+
+        </button>
+
+    </div>
+
+
+    <div class="user-toolbar">
+
+    <div class="user-search">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+       <input
+    type="text"
+    id="vehicleSearch"
+    placeholder="Araç ara..."
+    value="{{ search }}"
+>
+
+    </div>
+
+    <button
+    type="button"
+    class="clear-search-btn"
+    onclick="filterVehicles()">
+
+    Filtrele
+
+</button>
+
+    <button
+        type="button"
+        class="clear-search-btn"
+        onclick="clearVehicleSearch()">
+
+        <i class="fa-solid fa-rotate-left"></i>
+
+        Temizle
+
+    </button>
+
+</div>
+
+
+    <div class="user-table-wrapper">
+
+        <table class="user-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Kapı No</th>
+
+                    <th>Araç Adı</th>
+
+                    <th>Araç Tipi</th>
+
+                    <th>Yakıt</th>
+
+                    <th>Model</th>
+
+                    <th>KM</th>
+
+                    <th>Durum</th>
+
+                    <th>İşlemler</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for vehicle in vehicles %}
+
+                <tr>
+
+                    <td>
+    <strong>
+    {{ vehicle[9] or "-" }}
+</strong>
+</td>
+
+
+                    <td>
+                        {{ vehicle[2] }}
+                    </td>
+
+
+                    <td>
+                        {{ vehicle[3] }}
+                    </td>
+
+
+                    <td>
+                        {{ vehicle[4] }}
+                    </td>
+
+
+                    <td>
+                        {{ vehicle[5] or "-" }}
+                    </td>
+
+
+                    <td>
+                        {{ vehicle[7] }}
+                    </td>
+
+
+                    <td>
+
+                        {% if vehicle[8] == "aktif" %}
+
+                            <span class="status-badge status-active">
+                                Aktif
+                            </span>
+
+                        {% elif vehicle[8] == "bakimda" %}
+
+                            <span class="status-badge"
+                                  style="background:#fff4e5;color:#f59e0b;">
+                                Bakımda
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-badge status-inactive">
+    Pasif
+</span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="user-actions">
+
+    <button type="button"
+            class="edit-vehicle-btn"
+            data-vehicle-id="{{ vehicle[0] }}"
+            title="Düzenle">
+
+        <i class="fa-solid fa-pen"></i>
+
+    </button>
+
+
+    <button type="button"
+            class="delete-vehicle-btn"
+            data-vehicle-id="{{ vehicle[0] }}"
+            title="Sil">
+
+        <i class="fa-solid fa-trash"></i>
+
+    </button>
+
+</div>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="8"
+                        style="text-align:center;padding:40px;">
+
+                        Henüz kayıtlı araç bulunmuyor.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+        <!-- ARAÇ SAYFALAMA -->
+
+{% if total_pages > 1 %}
+
+<div class="pagination">
+
+    {% if page > 1 %}
+
+        <a href="?page={{ page - 1 }}">
+            ← Önceki
+        </a>
+
+    {% endif %}
+
+
+    {% if page > 3 %}
+
+        <a href="?page=1">
+            1
+        </a>
+
+        <span class="pagination-dots">
+            ...
+        </span>
+
+    {% endif %}
+
+
+    {% set start_page = [1, page - 2]|max %}
+    {% set end_page = [total_pages, page + 2]|min %}
+
+
+    {% for p in range(start_page, end_page + 1) %}
+
+        <a
+            href="?page={{ p }}"
+            class="{% if p == page %}active{% endif %}"
+        >
+            {{ p }}
+        </a>
+
+    {% endfor %}
+
+
+    {% if page < total_pages - 2 %}
+
+        <span class="pagination-dots">
+            ...
+        </span>
+
+        <a href="?page={{ total_pages }}">
+            {{ total_pages }}
+        </a>
+
+    {% endif %}
+
+
+    {% if page < total_pages %}
+
+        <a href="?page={{ page + 1 }}">
+            Sonraki →
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+    </div>
+
+    <!-- ================= YENİ ARAÇ MODALI ================= -->
+
+<div id="vehicleModal" class="user-modal">
+
+    <div class="user-modal-content">
+
+        <div class="user-modal-header">
+
+            <div>
+
+                <span class="page-label">
+                    ARAÇ YÖNETİMİ
+                </span>
+
+                <h3>
+                    Yeni Araç
+                </h3>
+
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    onclick="closeVehicleModal()">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <form method="POST"
+              action="{{ url_for('arac_ekle') }}">
+
+            <div class="user-form">
+
+
+                <!-- PLAKA -->
+
+                <div class="form-group">
+
+                    <label>
+                        Plaka
+                    </label>
+
+                    <input
+                        type="text"
+                        name="plate"
+                        id="newPlate"
+                        placeholder="Örn. 34 ABC 123"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- ARAÇ ADI -->
+
+                <div class="form-group">
+
+                    <label>
+                        Araç Adı
+                    </label>
+
+                    <input
+                        type="text"
+                        name="name"
+                        id="newVehicleName"
+                        placeholder="Örn. Mercedes Conecto"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- ARAÇ TİPİ -->
+
+                <div class="form-group">
+
+                    <label>
+                        Araç Tipi
+                    </label>
+
+                    <select
+                        name="vehicle_type"
+                        id="newVehicleType"
+                    >
+
+                        <option value="Standart Otobüs">
+    Standart Otobüs
+</option>
+
+<option value="Körüklü Otobüs">
+    Körüklü Otobüs
+</option>
+
+<option value="Elektrikli Otobüs">
+    Elektrikli Otobüs
+</option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- YAKIT TİPİ -->
+
+                <div class="form-group">
+
+                    <label>
+                        Yakıt Tipi
+                    </label>
+
+                    <select
+                        name="fuel_type"
+                        id="newFuelType"
+                    >
+
+                        <option value="dizel">
+                            Dizel
+                        </option>
+
+                        <option value="benzin">
+                            Benzin
+                        </option>
+
+                        <option value="elektrik">
+                            Elektrik
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- MODEL YILI -->
+
+                <div class="form-group">
+
+                    <label>
+                        Model Yılı
+                    </label>
+
+                    <input
+                        type="number"
+                        name="model_year"
+                        id="newModelYear"
+                        placeholder="Örn. 2020"
+                    >
+
+                </div>
+
+
+                
+
+
+                <!-- KİLOMETRE -->
+
+                <div class="form-group">
+
+                    <label>
+                        Kilometre
+                    </label>
+
+                    <input
+                        type="number"
+                        name="mileage"
+                        id="newMileage"
+                        placeholder="Örn. 120450"
+                        value="0"
+                    >
+
+                </div>
+
+
+                <!-- DURUM -->
+
+                <div class="form-group">
+
+                    <label>
+                        Durum
+                    </label>
+
+                    <select
+                        name="status"
+                        id="newVehicleStatus"
+                    >
+
+                        <option value="aktif">
+                            Aktif
+                        </option>
+
+                        <option value="bakimda">
+                            Bakımda
+                        </option>
+
+                        <option value="pasif">
+                            Pasif
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="user-modal-footer">
+
+                <button type="button"
+                        class="modal-cancel"
+                        onclick="closeVehicleModal()">
+
+                    İptal
+
+                </button>
+
+
+                <button type="submit"
+                        class="modal-save">
+
+                    <i class="fa-solid fa-check"></i>
+
+                    Araç Oluştur
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</div>
+
+<!-- YENİ ARAÇ MODALI -->
+
+<div id="vehicleModal" class="user-modal">
+
+    ...
+    
+</div>
+
+
+<!-- ARAÇ DÜZENLE MODALI -->
+
+<!-- ================= ARAÇ DÜZENLE MODALI ================= -->
+
+<div id="editVehicleModal" class="user-modal">
+
+    <div class="user-modal-content">
+
+        <div class="user-modal-header">
+
+            <div>
+
+                <span class="page-label">
+                    ARAÇ YÖNETİMİ
+                </span>
+
+                <h3>
+                    Araç Düzenle
+                </h3>
+
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    onclick="closeEditVehicleModal()">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <div class="user-form">
+
+            <div class="form-group">
+
+                <label>Kapı No</label>
+
+<input
+    type="text"
+    id="editVehicleDoorNumber"
+    placeholder="Kapı No"
+>
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Araç Adı</label>
+
+                <input
+                    type="text"
+                    id="editVehicleName"
+                    placeholder="Araç adı"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Araç Tipi</label>
+
+                <select id="editVehicleType">
+
+                    <option value="Standart Otobüs">
+    Standart Otobüs
+</option>
+
+<option value="Körüklü Otobüs">
+    Körüklü Otobüs
+</option>
+
+<option value="Elektrikli Otobüs">
+    Elektrikli Otobüs
+</option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Yakıt Tipi</label>
+
+                <select id="editFuelType">
+
+                    <option value="dizel">
+                        Dizel
+                    </option>
+
+                    <option value="benzin">
+                        Benzin
+                    </option>
+
+                    <option value="elektrik">
+                        Elektrik
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Model Yılı</label>
+
+                <input
+                    type="number"
+                    id="editModelYear"
+                    placeholder="Model yılı"
+                >
+
+            </div>
+
+
+            
+
+
+            <div class="form-group">
+
+                <label>Kilometre</label>
+
+                <input
+                    type="number"
+                    id="editMileage"
+                    placeholder="Kilometre"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Durum</label>
+
+                <select id="editVehicleStatus">
+
+                    <option value="aktif">
+                        Aktif
+                    </option>
+
+                    <option value="bakimda">
+                        Bakımda
+                    </option>
+
+                    <option value="pasif">
+                        Pasif
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="user-modal-footer">
+
+            <button type="button"
+                    class="modal-cancel"
+                    onclick="closeEditVehicleModal()">
+
+                İptal
+
+            </button>
+
+
+            <button type="button"
+                    class="modal-save"
+                    id="updateVehicleBtn">
+
+                <i class="fa-solid fa-check"></i>
+
+                Değişiklikleri Kaydet
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+    
+</script>
+
+
+
+
+<script>
+
+ console.log("ARAÇ JAVASCRIPT ÇALIŞIYOR");
+
+/* =========================================
+   YENİ ARAÇ MODALI
+========================================= */
+
+function openVehicleModal() {
+
+    document
+        .getElementById("vehicleModal")
+        .classList
+        .add("show");
+
+}
+
+
+function closeVehicleModal() {
+
+    document
+        .getElementById("vehicleModal")
+        .classList
+        .remove("show");
+
+}
+
+
+/* =========================================
+   ARAÇ DÜZENLEME MODALI KAPAT
+========================================= */
+
+function closeEditVehicleModal() {
+
+    document
+        .getElementById("editVehicleModal")
+        .classList
+        .remove("show");
+
+}
+
+
+/* =========================================
+   ARAÇ SİL
+========================================= */
+
+document
+    .querySelectorAll(".delete-vehicle-btn")
+    .forEach(function (button) {
+
+        button.addEventListener("click", function () {
+
+            const vehicleId =
+                this.dataset.vehicleId;
+
+
+            const confirmed = confirm(
+                "Bu aracı silmek istediğinize emin misiniz?"
+            );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            fetch("/arac_sil/" + vehicleId, {
+                method: "POST"
+            })
+
+            .then(function (response) {
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Silme işlemi başarısız."
+                    );
+
+                }
+
+                window.location.href =
+                    "/arac_yonetimi";
+
+            })
+
+            .catch(function (error) {
+
+                console.error(
+                    "Silme hatası:",
+                    error
+                );
+
+                alert(
+                    "Araç silinirken bir hata oluştu."
+                );
+
+            });
+
+        });
+
+    });
+
+
+/* =========================================
+   ARAÇ DÜZENLE
+========================================= */
+
+document
+    .querySelectorAll(".edit-vehicle-btn")
+    .forEach(function (button) {
+
+        button.addEventListener("click", function () {
+
+            const vehicleId =
+                this.dataset.vehicleId;
+
+
+            document
+                .getElementById("updateVehicleBtn")
+                .dataset.vehicleId = vehicleId;
+
+
+            fetch("/arac_getir/" + vehicleId)
+
+                .then(function (response) {
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Araç bilgileri alınamadı."
+                        );
+
+                    }
+
+                    return response.json();
+
+                })
+
+                .then(function (vehicle) {
+
+                    document
+    .getElementById("editVehicleDoorNumber")
+    .value = vehicle.door_number || "";
+
+
+                    document
+                        .getElementById("editVehicleName")
+                        .value = vehicle.name;
+
+
+                    document
+                        .getElementById("editVehicleType")
+                        .value = vehicle.vehicle_type;
+
+
+                    document
+                        .getElementById("editFuelType")
+                        .value = vehicle.fuel_type;
+
+
+                    document
+                        .getElementById("editModelYear")
+                        .value =
+                        vehicle.model_year || "";
+
+
+                    
+
+                    document
+                        .getElementById("editMileage")
+                        .value =
+                        vehicle.mileage || 0;
+
+
+                    document
+                        .getElementById("editVehicleStatus")
+                        .value =
+                        vehicle.status;
+
+
+                    document
+                        .getElementById("editVehicleModal")
+                        .classList
+                        .add("show");
+
+                })
+
+                .catch(function (error) {
+
+                    console.error(
+                        "Araç bilgisi hatası:",
+                        error
+                    );
+
+                    alert(
+                        "Araç bilgileri alınırken bir hata oluştu."
+                    );
+
+                });
+
+        });
+
+    });
+
+/* =========================================
+   ARAÇ GÜNCELLE
+========================================= */
+
+document
+    .getElementById("updateVehicleBtn")
+    .addEventListener("click", function () {
+
+        const vehicleId =
+            this.dataset.vehicleId;
+
+       const doorNumber =
+    document.getElementById("editVehicleDoorNumber").value;
+
+        const name =
+            document.getElementById("editVehicleName").value;
+
+        const vehicleType =
+            document.getElementById("editVehicleType").value;
+
+        const fuelType =
+            document.getElementById("editFuelType").value;
+
+        const modelYear =
+            document.getElementById("editModelYear").value;
+
+        const chassisNo =
+            document.getElementById("editChassisNo").value;
+
+        const mileage =
+            document.getElementById("editMileage").value;
+
+        const status =
+            document.getElementById("editVehicleStatus").value;
+
+
+        const formData = new URLSearchParams();
+
+        formData.append("vehicle_id", vehicleId);
+        formData.append("door_number", doorNumber);
+        formData.append("name", name);
+        formData.append("vehicle_type", vehicleType);
+        formData.append("fuel_type", fuelType);
+        formData.append("model_year", modelYear);
+        formData.append("chassis_no", chassisNo);
+        formData.append("mileage", mileage);
+        formData.append("status", status);
+
+
+        fetch("/arac_guncelle", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/x-www-form-urlencoded"
+            },
+
+            body: formData
+
+        })
+
+        .then(function (response) {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Güncelleme başarısız."
+                );
+
+            }
+
+            window.location.href =
+                "/arac_yonetimi";
+
+        })
+
+        .catch(function (error) {
+
+            console.error(
+                "Güncelleme hatası:",
+                error
+            );
+
+            alert(
+                "Araç güncellenirken bir hata oluştu."
+            );
+
+        });
+
+    });
+
+/* =========================================
+   ARAÇ ARAMA
+========================================= */
+
+document
+    .getElementById("vehicleSearch")
+    .addEventListener("input", function () {
+
+        const searchValue = this.value.trim();
+
+        clearTimeout(window.vehicleSearchTimeout);
+
+        window.vehicleSearchTimeout = setTimeout(function () {
+
+            if (searchValue === "") {
+
+                window.location.href =
+                    "/arac_yonetimi";
+
+            } else {
+
+                window.location.href =
+                    "/arac_yonetimi?search=" +
+                    encodeURIComponent(searchValue);
+
+            }
+
+        }, 400);
+
+    });
+
+    /* =========================================
+   ARAÇ ARAMA TEMİZLE
+========================================= */
+
+function filterVehicles() {
+
+    const searchValue =
+        document.getElementById("vehicleSearch").value.trim();
+
+    if (searchValue === "") {
+        return;
+    }
+
+    window.location.href =
+        "/arac_yonetimi?search=" +
+        encodeURIComponent(searchValue);
+}
+
+function clearVehicleSearch() {
+
+    window.location.href =
+        "/arac_yonetimi";
+}
+
+</script>
+
+{% endblock %}
